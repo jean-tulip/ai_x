@@ -114,6 +114,7 @@ function NewProjectModal({ isOpen, onClose, onCreate }: { isOpen: boolean; onClo
 
 export default function Page() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const requestIdRef = useRef(0);
   const toast = useToast();
 
   const [file, setFile] = useState<File | null>(null);
@@ -228,7 +229,7 @@ export default function Page() {
     setShowTBMModal(true);
   }
 
-  async function renderPdfPages(pdfFile: File) {
+  async function renderPdfPages(pdfFile: File, requestId: number) {
     const pdfjs = await getPdfjs();
     const buf = await pdfFile.arrayBuffer();
     const pdf = await (pdfjs as any).getDocument({ data: buf }).promise;
@@ -246,7 +247,9 @@ export default function Page() {
       await page.render({ canvasContext: ctx, viewport }).promise;
       images.push(canvas.toDataURL("image/jpeg"));
     }
-    setPageImages(images);
+    if (requestId === requestIdRef.current) {
+      setPageImages(images);
+    }
     return images;
   }
 
@@ -267,14 +270,17 @@ export default function Page() {
   }
 
   async function runValidation(f: File, documentType: DocumentType | null = null) {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     try {
       let text = "";
       let images: string[] = [];
 
       if (f.type === "application/pdf") {
-        images = await renderPdfPages(f);
+        images = await renderPdfPages(f, requestId);
+        if (requestId !== requestIdRef.current) return;
         text = await extractPdfText(f);
+        if (requestId !== requestIdRef.current) return;
       } else if (f.type.startsWith("image/")) {
         // Logic to get dataURL from file object for API
         const reader = new FileReader();
@@ -283,6 +289,7 @@ export default function Page() {
           reader.readAsDataURL(f);
         });
         images = [dataUrl];
+        if (requestId !== requestIdRef.current) return;
       }
 
       // Token Opt: First + Last
@@ -307,6 +314,7 @@ export default function Page() {
       });
 
       const data = (await res.json()) as Report;
+      if (requestId !== requestIdRef.current) return;
       if (!res.ok) {
         // Handle error response structure from API
         throw new Error((data as any).error || "Unknown server error");
@@ -316,26 +324,32 @@ export default function Page() {
       data.issues = data.issues.map((i: any) => ({ ...i, id: i.id || crypto.randomUUID() }));
 
       // Include documentType in report
-      setReport({
-        ...data,
-        documentType: documentType
-      });
+      if (requestId === requestIdRef.current) {
+        setReport({
+          ...data,
+          documentType: documentType
+        });
+      }
     } catch (e: any) {
-      console.error(e);
-      setReport({
-        fileName: f.name,
-        issues: [
-          {
-            id: crypto.randomUUID(), // Ensure ID for fallback error too
-            severity: "error",
-            title: "검증 실패",
-            message: e?.message || "오류가 발생했습니다."
-          }
-        ],
-        chat: [{ role: "ai", text: `오류가 발생했어요: ${e?.message}` }]
-      });
+      if (requestId === requestIdRef.current) {
+        console.error(e);
+        setReport({
+          fileName: f.name,
+          issues: [
+            {
+              id: crypto.randomUUID(), // Ensure ID for fallback error too
+              severity: "error",
+              title: "검증 실패",
+              message: e?.message || "오류가 발생했습니다."
+            }
+          ],
+          chat: [{ role: "ai", text: `오류가 발생했어요: ${e?.message}` }]
+        });
+      }
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
   }
 
