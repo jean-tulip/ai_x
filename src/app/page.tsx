@@ -329,7 +329,7 @@ export default function Page() {
   const [showProgress, setShowProgress] = useState(false);
   const [imageQuality, setImageQuality] = useState<ImageQuality | null>(null);
   const [errorDialog, setErrorDialog] = useState<{ error: ErrorDetails; onRetry?: () => void } | null>(null);
-  const [activeValidationType, setActiveValidationType] = useState<"document" | "photo">("document");
+  const [activeValidationType, setActiveValidationType] = useState<"document" | "photo" | "auto">("document");
   const [hiddenIssueIds, setHiddenIssueIds] = useState<string[]>([]); // Persist dismissed issues
   const [hasUnviewedIssues, setHasUnviewedIssues] = useState(false); // Show indicator when analysis completes
   const [issuesAnimating, setIssuesAnimating] = useState(false); // Brief pulse animation when issues arrive
@@ -351,8 +351,19 @@ export default function Page() {
     { id: "stage3", label: "결과 생성", icon: "check_circle" },
   ];
 
+  // Auto-detect validation stages (for images with auto-detect - neutral steps)
+  const autoDetectValidationSteps = [
+    { id: "stage1", label: "파일 분류", icon: "category" },
+    { id: "stage2", label: "내용 분석", icon: "search" },
+    { id: "stage3", label: "결과 생성", icon: "check_circle" },
+  ];
+
   // Use appropriate stages based on validation type
-  const validationSteps = activeValidationType === "photo" ? photoValidationSteps : documentValidationSteps;
+  const validationSteps = activeValidationType === "photo"
+    ? photoValidationSteps
+    : activeValidationType === "auto"
+    ? autoDetectValidationSteps
+    : documentValidationSteps;
 
   const [projects, setProjects] = useState<any[]>([]);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
@@ -444,15 +455,43 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, currentProjectId]);
 
-  async function fetchProjects() {
+  async function fetchProjects(retryCount = 0) {
     setIsLoadingProjects(true);
+    const MAX_RETRIES = 2;
+    const TIMEOUT_MS = 10000; // 10 second timeout
+    let shouldRetry = false;
+
     try {
-      const res = await fetch("/api/projects");
-      if (res.ok) setProjects(await res.json());
-    } catch (e) {
-      console.error("Failed to fetch projects", e);
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      const res = await fetch("/api/projects", { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        setProjects(await res.json());
+      } else {
+        console.error("Failed to fetch projects: HTTP", res.status);
+      }
+    } catch (e: any) {
+      // Check if it was a timeout/abort
+      if (e.name === "AbortError") {
+        console.warn(`fetchProjects timeout (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
+        // Retry on timeout (dev server might be warming up)
+        if (retryCount < MAX_RETRIES) {
+          shouldRetry = true;
+        }
+      } else {
+        console.error("Failed to fetch projects", e);
+      }
     } finally {
-      setIsLoadingProjects(false);
+      if (shouldRetry) {
+        // Schedule retry - keep loading state true
+        setTimeout(() => fetchProjects(retryCount + 1), 1000);
+      } else {
+        setIsLoadingProjects(false);
+      }
     }
   }
 
@@ -608,9 +647,17 @@ export default function Page() {
     validationAbortController.current = controller;
     const signal = controller.signal;
 
-    // Set validation type based on document type
+    // Set validation type based on document type and file type
     const isPhotoValidation = documentType === "SITE_PHOTO";
-    setActiveValidationType(isPhotoValidation ? "photo" : "document");
+    const isImageFile = f.type.startsWith("image/");
+    const isAutoDetectImage = documentType === null && isImageFile;
+
+    // Use "auto" progress for image auto-detection (shows neutral steps)
+    // Use "photo" for explicit site photo selection
+    // Use "document" for PDFs or explicit document type selection
+    setActiveValidationType(
+      isPhotoValidation ? "photo" : isAutoDetectImage ? "auto" : "document"
+    );
 
     setLoading(true);
     setShowProgress(true);
@@ -727,17 +774,17 @@ export default function Page() {
         if (images.length > 1) imagesToSend.push(images[images.length - 1]);
       }
 
-      // Different progress for photos vs documents
-      if (isPhotoValidation) {
-        // Photo validation: 3 fast stages
-        // Stage 1: 이미지 분석 (Image analysis)
+      // Different progress for photos/auto-detect vs documents
+      if (isPhotoValidation || isAutoDetectImage) {
+        // Photo/Auto validation: 3 stages
+        // Stage 1: 이미지 분석 / 파일 분류
         await new Promise((r) => setTimeout(r, 150));
         setValidationStep(1);
-        console.log("[Photo Validation] Stage 1/3 - Image analysis");
+        console.log(`[${isPhotoValidation ? "Photo" : "Auto"} Validation] Stage 1/3 - ${isAutoDetectImage ? "File classification" : "Image analysis"}`);
 
-        // Stage 2: 안전 검증 (Safety validation) - animate during API call
+        // Stage 2: 안전 검증 / 내용 분석 - animate during API call
         await new Promise((r) => setTimeout(r, 150));
-        console.log("[Photo Validation] Stage 2/3 - Safety validation (animating...)");
+        console.log(`[${isPhotoValidation ? "Photo" : "Auto"} Validation] Stage 2/3 - ${isAutoDetectImage ? "Content analysis" : "Safety validation"} (animating...)`);
         let progressValue = 1.0;
         progressInterval = setInterval(() => {
           progressValue += 0.15;
@@ -836,10 +883,10 @@ export default function Page() {
       }
 
       // Final stage: Complete
-      if (isPhotoValidation) {
-        // Photo Stage 3: 결과 생성 (Result generation complete)
+      if (isPhotoValidation || isAutoDetectImage) {
+        // Photo/Auto Stage 3: 결과 생성 (Result generation complete)
         setValidationStep(2);
-        console.log("[Photo Validation] Stage 3/3 complete - Result generation done");
+        console.log(`[${isPhotoValidation ? "Photo" : "Auto"} Validation] Stage 3/3 complete - Result generation done`);
       } else {
         // Document Stage 5: 위험 평가 (Risk assessment complete)
         setValidationStep(4);

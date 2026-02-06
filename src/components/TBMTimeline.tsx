@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface TBMRecord {
@@ -75,32 +76,94 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
     return "bg-gray-100 text-gray-800";
   };
 
+  // Track if we're mounted in browser for portal
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Render the confirmation dialog via portal to avoid DOM tree conflicts
+  // when the main content switches between timeline and empty state
+  const renderConfirmDialog = () => {
+    if (!confirmDelete || !mounted) return null;
+
+    return createPortal(
+      <ConfirmDialog
+        key={`confirm-${confirmDelete.type}-${confirmDelete.id || 'all'}`}
+        isOpen={true}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          // Capture values before clearing state
+          const deleteType = confirmDelete?.type;
+          const deleteId = confirmDelete?.id;
+
+          // Clear dialog state FIRST
+          setConfirmDelete(null);
+
+          // Clear expanded state
+          if (deleteType === "single" && deleteId && expandedId === deleteId) {
+            setExpandedId(null);
+          } else if (deleteType === "all") {
+            setExpandedId(null);
+          }
+
+          // Execute delete after state is cleared
+          // Use setTimeout to ensure React has finished updating
+          setTimeout(() => {
+            if (deleteType === "single" && deleteId) {
+              onDelete?.(deleteId);
+            } else if (deleteType === "all") {
+              onDeleteAll?.();
+            }
+          }, 0);
+        }}
+        title={confirmDelete.type === "all" ? "전체 삭제 확인" : "삭제 확인"}
+        message={
+          confirmDelete.type === "all"
+            ? `총 ${tbmRecords.length}개의 TBM 기록을 모두 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
+            : "이 TBM 기록을 삭제하시겠습니까?"
+        }
+        confirmText="삭제"
+        cancelText="취소"
+        variant="danger"
+      />,
+      document.body
+    );
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-gray-500">TBM 기록을 불러오는 중...</div>
-      </div>
+      <>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-gray-500">TBM 기록을 불러오는 중...</div>
+        </div>
+        {renderConfirmDialog()}
+      </>
     );
   }
 
   if (tbmRecords.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-8">
-        <div className="text-6xl mb-4">🎤</div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">TBM 기록이 없습니다</h3>
-        <p className="text-gray-600 mb-4">
-          상단의 마이크 버튼을 클릭하여 작업 전 안전회의를 녹음하세요.
-          <br />
-          AI가 자동으로 작업 종류, 위험요인, 담당자를 추출합니다.
-        </p>
-        <div className="text-sm text-gray-500">
-          💡 녹음 후 이 탭으로 자동 이동됩니다
+      <>
+        <div className="flex flex-col items-center justify-center h-full text-center p-8">
+          <div className="text-6xl mb-4">🎤</div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">TBM 기록이 없습니다</h3>
+          <p className="text-gray-600 mb-4">
+            상단의 마이크 버튼을 클릭하여 작업 전 안전회의를 녹음하세요.
+            <br />
+            AI가 자동으로 작업 종류, 위험요인, 담당자를 추출합니다.
+          </p>
+          <div className="text-sm text-gray-500">
+            💡 녹음 후 이 탭으로 자동 이동됩니다
+          </div>
         </div>
-      </div>
+        {renderConfirmDialog()}
+      </>
     );
   }
 
   return (
+    <>
     <div className="h-full overflow-y-auto p-6 bg-gray-50">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
@@ -264,45 +327,8 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
           })}
         </div>
       </div>
-
-      {/* Confirm Delete Dialog */}
-      <ConfirmDialog
-        isOpen={confirmDelete !== null}
-        onClose={() => setConfirmDelete(null)}
-        onConfirm={() => {
-          // Capture values before clearing state
-          const deleteType = confirmDelete?.type;
-          const deleteId = confirmDelete?.id;
-
-          // Clear dialog state FIRST to prevent DOM errors during re-render
-          setConfirmDelete(null);
-
-          // Clear expanded state
-          if (deleteType === "single" && deleteId && expandedId === deleteId) {
-            setExpandedId(null);
-          } else if (deleteType === "all") {
-            setExpandedId(null);
-          }
-
-          // Use setTimeout to ensure state updates complete before delete
-          setTimeout(() => {
-            if (deleteType === "single" && deleteId) {
-              onDelete?.(deleteId);
-            } else if (deleteType === "all") {
-              onDeleteAll?.();
-            }
-          }, 0);
-        }}
-        title={confirmDelete?.type === "all" ? "전체 삭제 확인" : "삭제 확인"}
-        message={
-          confirmDelete?.type === "all"
-            ? `총 ${tbmRecords.length}개의 TBM 기록을 모두 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
-            : "이 TBM 기록을 삭제하시겠습니까?"
-        }
-        confirmText="삭제"
-        cancelText="취소"
-        variant="danger"
-      />
     </div>
+    {renderConfirmDialog()}
+    </>
   );
 }

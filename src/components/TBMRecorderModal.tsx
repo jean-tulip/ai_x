@@ -395,19 +395,31 @@ export default function TBMRecorderModal({
             </>
           ) : (
             <>
-              <div className="space-y-2">
-                <div className="text-sm font-bold text-slate-700 dark:text-slate-200">음성 파일 업로드</div>
-                <input
-                  type="file"
-                  accept="audio/*"
-                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400"
-                  onChange={(e) => onUploadFile(e.target.files?.[0] ?? null)}
-                  disabled={isPosting}
-                />
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  * 데스크탑에서도 여기서 TBM 음성 파일 업로드 가능합니다.
+              {isPosting ? (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 text-sm text-yellow-800 dark:text-yellow-300">
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin size-5 border-2 border-yellow-600 border-t-transparent rounded-full"></div>
+                    <div>
+                      <span className="font-bold block">AI가 음성 파일을 분석하는 중...</span>
+                      <span className="text-xs mt-1 block">작업 종류, 위험요인, 담당자를 추출합니다</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="text-sm font-bold text-slate-700 dark:text-slate-200">음성 파일 업로드</div>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400"
+                    onChange={(e) => onUploadFile(e.target.files?.[0] ?? null)}
+                    disabled={isPosting}
+                  />
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    * 데스크탑에서도 여기서 TBM 음성 파일 업로드 가능합니다.
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <button
@@ -415,7 +427,7 @@ export default function TBMRecorderModal({
                   disabled={isPosting}
                   className="flex-1 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white font-black disabled:opacity-50"
                 >
-                  닫기
+                  {isPosting ? "처리 중..." : "닫기"}
                 </button>
               </div>
             </>

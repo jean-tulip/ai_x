@@ -598,11 +598,61 @@ export async function POST(req: Request) {
       contextText = tempContextText;
     }
 
-    // ✅ PHOTO VALIDATION: Special handling for site photos
+    // ✅ PRE-CLASSIFICATION: For images with auto-detect, determine if it's a document or site photo
     console.log("[Route] Document type received:", documentType);
     console.log("[Route] Is SITE_PHOTO?", documentType === "SITE_PHOTO");
+    console.log("[Route] Has text?", hasText, "Has images?", hasImages);
 
-    if (documentType === "SITE_PHOTO") {
+    // Auto-detect for images: classify before extraction
+    let effectiveDocumentType = documentType;
+
+    if (documentType === null && hasImages && !hasText) {
+      // Image-only upload with auto-detect - need to classify first
+      console.log("\n========== IMAGE PRE-CLASSIFICATION ==========");
+
+      try {
+        const classificationPrompt = `You are analyzing an image to determine its type. Look at the image and classify it into ONE of these categories:
+
+1. "SCANNED_DOCUMENT" - A scanned or photographed safety document, checklist, form, or paperwork. Has visible text, tables, checkboxes, signatures, or form fields.
+
+2. "SITE_PHOTO" - A photograph of a construction site, work area, or workers. Shows actual physical environment, people working, equipment, or site conditions. NOT a photo of a document.
+
+Respond with ONLY a JSON object:
+{
+  "classification": "SCANNED_DOCUMENT" or "SITE_PHOTO",
+  "confidence": "high" or "medium" or "low",
+  "reason": "brief explanation"
+}`;
+
+        const content: any[] = [
+          { type: "text", text: classificationPrompt },
+          { type: "image_url", image_url: { url: pageImages[0], detail: "low" } } // Use low detail for speed
+        ];
+
+        const classifyResponse = await getOpenAI().chat.completions.create({
+          model: "gpt-4o-mini", // Use mini for speed and cost
+          messages: [{ role: "user", content }],
+          max_tokens: 150,
+          temperature: 0,
+        });
+
+        const classifyResult = safeJsonParse(classifyResponse.choices[0]?.message?.content ?? "");
+        console.log("[Pre-Classification] Result:", classifyResult);
+
+        if (classifyResult?.classification === "SITE_PHOTO") {
+          console.log("[Pre-Classification] Detected as SITE_PHOTO, routing to photo validation");
+          effectiveDocumentType = "SITE_PHOTO";
+        } else {
+          console.log("[Pre-Classification] Detected as SCANNED_DOCUMENT, continuing with document extraction");
+        }
+      } catch (classifyError) {
+        console.warn("[Pre-Classification] Failed, defaulting to document extraction:", classifyError);
+        // Continue with document extraction as fallback
+      }
+    }
+
+    // ✅ PHOTO VALIDATION: Special handling for site photos
+    if (effectiveDocumentType === "SITE_PHOTO") {
       console.log("\n========== PHOTO VALIDATION MODE ==========");
 
       if (!hasImages) {
@@ -858,10 +908,12 @@ export async function POST(req: Request) {
       TBM: "TBM",
       OTHER: "unknown",
     };
-    const selectedDocType = documentTypeMap[documentType as keyof typeof documentTypeMap];
+    // Use effectiveDocumentType for mismatch checking (handles auto-detected types)
+    const selectedDocType = documentTypeMap[effectiveDocumentType as keyof typeof documentTypeMap];
     const mismatchIssues: ValidationIssue[] = [];
 
-    if (documentType) {
+    // Only check for mismatch if user explicitly selected a type (not auto-detected)
+    if (documentType && documentType === effectiveDocumentType) {
       if (selectedDocType === "unknown") {
         if (extracted.docType !== "unknown") {
           mismatchIssues.push({
@@ -973,7 +1025,7 @@ export async function POST(req: Request) {
           issuesJson: JSON.stringify(allIssues),
           chatJson: extractedChat,
           projectId: projectId ?? null,
-          documentType: documentType ?? null,
+          documentType: effectiveDocumentType ?? null, // Use effectiveDocumentType for auto-detected types
           // Stage 4: Save inspector name and checklist for pattern analysis
           inspectorName: extracted.inspectorName ?? null,
           checklistJson: extracted.checklist ? JSON.stringify(extracted.checklist) : null,
