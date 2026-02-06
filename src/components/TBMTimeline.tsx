@@ -29,6 +29,13 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
     console.log("[TBMTimeline] Received records:", tbmRecords.length, tbmRecords);
   }, [tbmRecords]);
 
+  // Clear expandedId if the expanded record no longer exists
+  useEffect(() => {
+    if (expandedId && !tbmRecords.some(r => r.id === expandedId)) {
+      setExpandedId(null);
+    }
+  }, [tbmRecords, expandedId]);
+
   const parseJsonField = (field: string | null): any[] => {
     if (!field) return [];
     try {
@@ -137,6 +144,10 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
                           onClick={(e) => {
                             e.stopPropagation();
                             if (confirm("이 TBM 기록을 삭제하시겠습니까?")) {
+                              // Clear expanded state before deleting to prevent DOM errors
+                              if (expandedId === record.id) {
+                                setExpandedId(null);
+                              }
                               onDelete(record.id);
                             }
                           }}

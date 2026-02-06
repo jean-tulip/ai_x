@@ -79,10 +79,20 @@ interface IssuesListProps {
   onConfirm?: (id: string) => void;
   onFix?: (issue: Issue) => void;
   processingIssueId?: string | null;
+  hasUnviewedIssues?: boolean;
+  isAnimating?: boolean;
+  onMarkIssuesViewed?: () => void;
 }
 
-export function IssuesList({ issues, loading, onConfirm, onFix, processingIssueId }: IssuesListProps) {
+export function IssuesList({ issues, loading, onConfirm, onFix, processingIssueId, hasUnviewedIssues = false, isAnimating = false, onMarkIssuesViewed }: IssuesListProps) {
   const [hiddenIssueIds, setHiddenIssueIds] = useState<Set<string>>(new Set());
+
+  // Mark issues as viewed when user interacts with the list
+  const markViewed = () => {
+    if (hasUnviewedIssues && onMarkIssuesViewed) {
+      onMarkIssuesViewed();
+    }
+  };
 
   if (loading) {
     return (
@@ -123,32 +133,73 @@ export function IssuesList({ issues, loading, onConfirm, onFix, processingIssueI
   const errorCount = issues.filter((i) => i.severity === "error").length;
   const warnCount = issues.filter((i) => i.severity === "warn").length;
   const infoCount = issues.filter((i) => i.severity === "info").length;
+  const totalCount = issues.length;
+
+  // Determine header badge color based on severity
+  const headerBadgeColor = errorCount > 0
+    ? "bg-red-500"
+    : warnCount > 0
+      ? "bg-orange-500"
+      : "bg-blue-500";
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900">
-      {/* Summary Bar */}
-      <div className="px-3 py-2 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2 flex-wrap">
-        {errorCount > 0 && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30">
-            <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-sm">error</span>
-            <span className="text-xs font-bold text-red-600 dark:text-red-400">{errorCount}</span>
+    <div
+      className={`flex flex-col h-full transition-all duration-500 ${
+        isAnimating
+          ? "bg-blue-100 dark:bg-blue-900/40 ring-4 ring-blue-500 shadow-lg shadow-blue-500/50"
+          : "bg-slate-50 dark:bg-slate-900"
+      }`}
+      onClick={markViewed}
+    >
+      {/* Header with Title and Badge */}
+      <div className={`px-4 py-3 border-b transition-all duration-500 ${
+        isAnimating
+          ? "bg-blue-200 dark:bg-blue-800/50 border-blue-300 dark:border-blue-700"
+          : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+      }`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-800 dark:text-white">발견된 문제</h2>
+            {totalCount > 0 && (
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold text-white ${headerBadgeColor} ${
+                isAnimating ? "animate-bounce" : ""
+              }`}>
+                {totalCount}
+              </span>
+            )}
+            {hasUnviewedIssues && (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+            )}
           </div>
-        )}
-        {warnCount > 0 && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30">
-            <span className="material-symbols-outlined text-orange-600 dark:text-orange-400 text-sm">warning</span>
-            <span className="text-xs font-bold text-orange-600 dark:text-orange-400">{warnCount}</span>
-          </div>
-        )}
-        {infoCount > 0 && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30">
-            <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-sm">info</span>
-            <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{infoCount}</span>
-          </div>
-        )}
-        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">
-          {visibleIssues.length} / {issues.length}
-        </span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            {visibleIssues.length} / {issues.length}
+          </span>
+        </div>
+
+        {/* Severity Summary */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {errorCount > 0 && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30">
+              <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-sm">error</span>
+              <span className="text-xs font-bold text-red-600 dark:text-red-400">{errorCount}</span>
+            </div>
+          )}
+          {warnCount > 0 && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30">
+              <span className="material-symbols-outlined text-orange-600 dark:text-orange-400 text-sm">warning</span>
+              <span className="text-xs font-bold text-orange-600 dark:text-orange-400">{warnCount}</span>
+            </div>
+          )}
+          {infoCount > 0 && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30">
+              <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-sm">info</span>
+              <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{infoCount}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Issues List - Chat-style cards */}

@@ -332,6 +332,7 @@ export default function Page() {
   const [activeValidationType, setActiveValidationType] = useState<"document" | "photo">("document");
   const [hiddenIssueIds, setHiddenIssueIds] = useState<string[]>([]); // Persist dismissed issues
   const [hasUnviewedIssues, setHasUnviewedIssues] = useState(false); // Show indicator when analysis completes
+  const [issuesAnimating, setIssuesAnimating] = useState(false); // Brief pulse animation when issues arrive
   const [localChatMessages, setLocalChatMessages] = useState<{ role: "ai" | "user"; text: string }[]>([]); // Persist local chat
 
   // Document validation stages (5 stages)
@@ -366,7 +367,8 @@ export default function Page() {
   // TBM Timeline states
   const [activeTab, setActiveTab] = useState<"document" | "tbm">("document");
   const [tbmRecords, setTbmRecords] = useState<any[]>([]);
-  const [loadingTBMs, setLoadingTBMs] = useState(false);
+  const [loadingTBMs, setLoadingTBMs] = useState(true); // Start true to show loading on first visit
+  const [tbmInitialLoadDone, setTbmInitialLoadDone] = useState(false);
 
   // Confirmation dialog states
   const [confirmClearFile, setConfirmClearFile] = useState(false);
@@ -859,6 +861,9 @@ export default function Page() {
       if (data.issues && data.issues.length > 0) {
         console.log(`[Validation Complete] Setting hasUnviewedIssues=true, issues count: ${data.issues.length}`);
         setHasUnviewedIssues(true);
+        // Trigger pulse animation for 6 seconds
+        setIssuesAnimating(true);
+        setTimeout(() => setIssuesAnimating(false), 6000);
       }
 
       // Brief pause to show 100% completion before hiding progress
@@ -1078,11 +1083,16 @@ export default function Page() {
 
   async function deleteTBM(id: string) {
     try {
-      const resp = await fetch(`/api/history?id=${id}`, { method: "DELETE" });
-      if (!resp.ok) throw new Error("Failed to delete TBM");
+      // Optimistically remove from UI first to prevent DOM errors
+      setTbmRecords(prev => prev.filter(r => r.id !== id));
 
-      // Refresh the list
-      await loadTBMRecords();
+      const resp = await fetch(`/api/history?id=${id}`, { method: "DELETE" });
+      if (!resp.ok) {
+        // Revert on failure - reload the list
+        await loadTBMRecords();
+        throw new Error("Failed to delete TBM");
+      }
+
       toast.success("TBM 기록이 삭제되었습니다", 2000);
     } catch (e) {
       console.error("Failed to delete TBM:", e);
@@ -1789,7 +1799,15 @@ export default function Page() {
               <div className="hidden lg:flex flex-1 min-h-0 w-full">
                 {file || report ? (
                   <ThreeColumnLayout
-                    left={<IssuesList issues={report?.issues ?? []} loading={loading} />}
+                    left={
+                      <IssuesList
+                        issues={report?.issues ?? []}
+                        loading={loading}
+                        hasUnviewedIssues={hasUnviewedIssues}
+                        isAnimating={issuesAnimating}
+                        onMarkIssuesViewed={() => setHasUnviewedIssues(false)}
+                      />
+                    }
                     center={
                       <DocumentViewer
                         file={file}
@@ -1904,6 +1922,7 @@ export default function Page() {
                       initialHiddenIssueIds={hiddenIssueIds}
                       onHiddenIssuesChange={setHiddenIssueIds}
                       hasUnviewedIssues={hasUnviewedIssues}
+                      isAnimating={issuesAnimating}
                       onMarkIssuesViewed={() => setHasUnviewedIssues(false)}
                       initialLocalChatMessages={localChatMessages}
                       onLocalChatMessagesChange={setLocalChatMessages}

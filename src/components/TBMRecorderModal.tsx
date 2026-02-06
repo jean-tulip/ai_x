@@ -87,9 +87,12 @@ export default function TBMRecorderModal({
   const totalFramesRef = useRef(0);
 
   // ✅ 모달 열릴 때: Page에서 내려준 initialMode(=props.mode)로 탭 맞추기
+  // Always reset to "record" mode when modal opens to ensure consistent behavior
   useEffect(() => {
-    if (!open) return;
-    setMode(initialMode);
+    if (open) {
+      // Force reset to initialMode (default: "record") every time modal opens
+      setMode(initialMode);
+    }
   }, [open, initialMode]);
 
   // ✅ 모달 열릴 때 마이크 준비 (record 탭일 때만)
@@ -99,6 +102,8 @@ export default function TBMRecorderModal({
   useEffect(() => {
     if (open) return;
 
+    // Reset mode to default when modal closes
+    setMode("record");
     setIsRecording(false);
     setStartedAtMs(null);
     chunksRef.current = [];
