@@ -208,3 +208,164 @@ Test with `test-documents/1-valid/valid-safety-checklist.pdf`:
 ---
 
 **Ready for demo (Feb 8, 2026)** ✅
+
+---
+
+## 🐛 OPEN BUG - TBM Timeline Delete & Loading State Issues
+
+**Status**: UNRESOLVED (As of Feb 6, 2026)
+**Priority**: Medium (functionality works, but UX issues persist)
+
+### Issue 1: TBM Delete All Button Causes Runtime Error
+
+**Symptom**:
+- Clicking "전체 삭제" (Delete All) button in TBM Timeline throws:
+  `NotFoundError: Failed to execute 'removeChild' on 'Node'`
+- Error occurs in React DOM reconciliation
+- Single delete works; Delete All fails
+- Works in no-project context but fails inside a project (needs verification)
+
+**Root Cause Hypothesis**:
+- When all TBM records are deleted, component switches from timeline view to empty state
+- ConfirmDialog was inside conditional render that changes when records become empty
+- DOM tree changes during dialog callback execution causes React reconciliation error
+
+**Files Involved**:
+- `src/components/TBMTimeline.tsx` - Main component with delete logic
+- `src/components/ConfirmDialog.tsx` - Confirmation dialog component
+- `src/app/page.tsx` - Parent with `deleteAllTBMs()` function
+
+### Issue 2: Loading Text and "No Records" Showing Simultaneously
+
+**Symptom**:
+- When switching to TBM tab, both messages briefly appear:
+  - "TBM 기록을 불러오는 중..." (Loading)
+  - "TBM 기록이 없습니다" (No records)
+- Should only show one at a time
+
+**Root Cause Hypothesis**:
+- Race condition between tab switch and loading state
+- `loadingTBMs` might be `false` from previous state when tab activates
+- useEffect that calls `loadTBMRecords()` fires AFTER initial render
+
+### Attempted Fixes (All Unsuccessful)
+
+#### Attempt 1: React Portal for ConfirmDialog
+**Rationale**: Render dialog outside TBMTimeline's DOM tree to avoid reconciliation issues
+**Changes**:
+```tsx
+// TBMTimeline.tsx
+import { createPortal } from "react-dom";
+
+const [mounted, setMounted] = useState(false);
+useEffect(() => { setMounted(true); }, []);
+
+const renderConfirmDialog = () => {
+  if (!confirmDelete || !mounted) return null;
+  return createPortal(<ConfirmDialog ... />, document.body);
+};
+```
+**Result**: Did not fix the issue
+
+#### Attempt 2: Separate onConfirm and onClose Handling
+**Rationale**: ConfirmDialog calls both `onConfirm()` then `onClose()`, causing double state update
+**Changes**:
+```tsx
+// ConfirmDialog.tsx - Added closeOnConfirm prop
+interface ConfirmDialogProps {
+  // ...
+  closeOnConfirm?: boolean; // defaults to true
+}
+
+onClick={() => {
+  onConfirm();
+  if (closeOnConfirm) {
+    onClose();
+  }
+}}
+
+// TBMTimeline.tsx - Use closeOnConfirm={false}
+<ConfirmDialog
+  closeOnConfirm={false}
+  onConfirm={() => {
+    setConfirmDelete(null); // Handle closing here
+    setTimeout(() => onDeleteAll?.(), 0);
+  }}
+/>
+```
+**Result**: Did not fix the issue
+
+#### Attempt 3: Set Loading State Before Tab Switch
+**Rationale**: Prevent flash of empty state by ensuring loading=true before render
+**Changes**:
+```tsx
+// page.tsx - Tab button click handler
+<button onClick={() => {
+  setLoadingTBMs(true);  // Set loading first
+  setActiveTab("tbm");
+}}>
+
+// page.tsx - TBM completion callback
+setLoadingTBMs(true);
+setActiveTab("tbm");
+await loadTBMRecords();
+```
+**Result**: Did not fix the issue
+
+#### Attempt 4: hasLoadedOnce State in TBMTimeline
+**Rationale**: Only show empty state after first load completes
+**Changes**:
+```tsx
+// TBMTimeline.tsx
+const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+
+useEffect(() => {
+  if (!loading && !hasLoadedOnce) {
+    setHasLoadedOnce(true);
+  }
+}, [loading, hasLoadedOnce]);
+
+// Show loading if loading OR haven't loaded once
+if (loading || !hasLoadedOnce) {
+  return <LoadingState />;
+}
+```
+**Result**: Did not fix the issue
+
+### Current State of Code
+
+The attempted fixes are still in the code:
+- `ConfirmDialog.tsx` has `closeOnConfirm` prop (lines 14-15, 27, 100-102)
+- `TBMTimeline.tsx` uses portal and `hasLoadedOnce` state
+- `page.tsx` has `setLoadingTBMs(true)` before tab switches
+
+### Debugging Notes
+
+- User observed: Delete works in no-project context, fails in project context
+- Console shows: `[TBMTimeline] Received records: X loading: true/false`
+- The `tbmInitialLoadDone` state exists in page.tsx (line 382) but is never used
+
+### Possible Next Steps to Investigate
+
+1. **Lift dialog state to parent**: Move ConfirmDialog rendering to page.tsx entirely, outside TBMTimeline
+2. **Check project-specific code paths**: Compare `loadTBMRecords` behavior with/without projectId
+3. **Add more console logs**: Track exact sequence of state changes during delete
+4. **Check React StrictMode**: Could be causing double-render issues in development
+5. **Verify cache clearing**: User mentioned "maybe it is cache" - try hard refresh
+6. **Check if HMR is causing issues**: Full page reload vs hot reload behavior
+
+### Related Code Locations
+
+```
+src/components/TBMTimeline.tsx:28-40    - State declarations
+src/components/TBMTimeline.tsx:93-139   - renderConfirmDialog with portal
+src/components/TBMTimeline.tsx:141-151  - Loading state condition
+src/components/ConfirmDialog.tsx:14-15  - closeOnConfirm prop
+src/app/page.tsx:380-382                - TBM state declarations
+src/app/page.tsx:450-456                - useEffect for loading TBMs
+src/app/page.tsx:1105-1129              - loadTBMRecords function
+src/app/page.tsx:1150-1178              - deleteAllTBMs function
+src/app/page.tsx:1865-1869              - Tab button with loading fix
+```
+
+---

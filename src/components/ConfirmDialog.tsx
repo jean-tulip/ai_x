@@ -11,6 +11,8 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "warning" | "info";
+  /** If true, onConfirm handles closing - don't auto-call onClose after confirm */
+  closeOnConfirm?: boolean;
 }
 
 export function ConfirmDialog({
@@ -22,6 +24,7 @@ export function ConfirmDialog({
   confirmText = "확인",
   cancelText = "취소",
   variant = "warning",
+  closeOnConfirm = true,
 }: ConfirmDialogProps) {
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -94,7 +97,9 @@ export function ConfirmDialog({
             type="button"
             onClick={() => {
               onConfirm();
-              onClose();
+              if (closeOnConfirm) {
+                onClose();
+              }
             }}
             className={`px-6 py-2 text-white font-bold rounded-xl transition-all shadow-lg ${style.button} active:scale-[0.98]`}
           >

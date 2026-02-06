@@ -1749,7 +1749,8 @@ export default function Page() {
           setTbmOpen(false);
           dismissWelcome();
 
-          // Auto-switch to TBM Timeline tab
+          // Auto-switch to TBM Timeline tab (set loading first to prevent flash)
+          setLoadingTBMs(true);
           setActiveTab("tbm");
           console.log("[TBM onComplete] Switched to TBM tab");
 
@@ -1861,7 +1862,11 @@ export default function Page() {
               📄 문서 검증
             </button>
             <button
-              onClick={() => setActiveTab("tbm")}
+              onClick={() => {
+                // Set loading true immediately to prevent flash of "no records" state
+                setLoadingTBMs(true);
+                setActiveTab("tbm");
+              }}
               className={`px-4 py-2 rounded-t-lg font-medium transition ${activeTab === "tbm"
                 ? "bg-blue-600 text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300 dark:hover:bg-slate-600"

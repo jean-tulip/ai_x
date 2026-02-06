@@ -28,10 +28,16 @@ interface TBMTimelineProps {
 export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefresh, onDelete, onDeleteAll }: TBMTimelineProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ type: "single" | "all"; id?: string } | null>(null);
+  // Track if we've ever finished loading - prevents showing empty state before first load completes
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   useEffect(() => {
-    console.log("[TBMTimeline] Received records:", tbmRecords.length, tbmRecords);
-  }, [tbmRecords]);
+    console.log("[TBMTimeline] Received records:", tbmRecords.length, "loading:", loading);
+    // Mark as loaded once when loading finishes (regardless of whether records exist)
+    if (!loading && !hasLoadedOnce) {
+      setHasLoadedOnce(true);
+    }
+  }, [tbmRecords, loading, hasLoadedOnce]);
 
   // Clear expandedId if the expanded record no longer exists
   useEffect(() => {
@@ -92,13 +98,11 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
         key={`confirm-${confirmDelete.type}-${confirmDelete.id || 'all'}`}
         isOpen={true}
         onClose={() => setConfirmDelete(null)}
+        closeOnConfirm={false}
         onConfirm={() => {
           // Capture values before clearing state
           const deleteType = confirmDelete?.type;
           const deleteId = confirmDelete?.id;
-
-          // Clear dialog state FIRST
-          setConfirmDelete(null);
 
           // Clear expanded state
           if (deleteType === "single" && deleteId && expandedId === deleteId) {
@@ -107,8 +111,11 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
             setExpandedId(null);
           }
 
-          // Execute delete after state is cleared
-          // Use setTimeout to ensure React has finished updating
+          // Close dialog FIRST, then execute delete
+          // This ensures the portal is cleanly unmounted before DOM changes from delete
+          setConfirmDelete(null);
+
+          // Execute delete after dialog state is cleared
           setTimeout(() => {
             if (deleteType === "single" && deleteId) {
               onDelete?.(deleteId);
@@ -131,7 +138,8 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
     );
   };
 
-  if (loading) {
+  // Show loading state if loading OR if we haven't loaded once yet
+  if (loading || !hasLoadedOnce) {
     return (
       <>
         <div className="flex items-center justify-center h-full">
