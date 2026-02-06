@@ -16,6 +16,7 @@
     "@anthropic-ai/sdk": "^0.71.2",
     "@prisma/client": "^5.22.0",
     "html-pdf-node": "^1.0.8",
+    "html2pdf.js": "^0.10.3",
     "idb-keyval": "^6.2.2",
     "next": "^14.2.0",
     "openai": "^6.17.0",

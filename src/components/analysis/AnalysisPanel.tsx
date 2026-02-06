@@ -142,6 +142,11 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
     const [isSendingChat, setIsSendingChat] = useState(false);
     const [localChatMessages, setLocalChatMessages] = useState<{ role: "ai" | "user"; text: string }[]>(initialLocalChatMessages);
 
+    // Sync localChatMessages when initialLocalChatMessages changes (e.g., project switch, async restore)
+    useEffect(() => {
+        setLocalChatMessages(initialLocalChatMessages);
+    }, [initialLocalChatMessages]);
+
     // Smart severity filter: Only show buttons for severities that exist in issues
     const availableSeverities = useMemo(() => {
         const severities = new Set<string>();

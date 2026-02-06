@@ -882,14 +882,16 @@ export default function Page() {
         throw new Error((data as any).error || "서버 오류가 발생했습니다");
       }
 
-      // Final stage: Complete
+      // Final stage: Complete (set to totalSteps to show 100% progress)
       if (isPhotoValidation || isAutoDetectImage) {
         // Photo/Auto Stage 3: 결과 생성 (Result generation complete)
-        setValidationStep(2);
+        // Set to 3 so progress shows 3/3 = 100%
+        setValidationStep(3);
         console.log(`[${isPhotoValidation ? "Photo" : "Auto"} Validation] Stage 3/3 complete - Result generation done`);
       } else {
         // Document Stage 5: 위험 평가 (Risk assessment complete)
-        setValidationStep(4);
+        // Set to 5 so progress shows 5/5 = 100%
+        setValidationStep(5);
         console.log("[Validation] Stage 5/5 complete - Risk assessment done");
       }
 
@@ -931,8 +933,11 @@ export default function Page() {
         setLoading(false);
         setShowProgress(false);
       }
-      // ✅ Clean up abort controller to prevent memory leak
-      validationAbortController.current = null;
+      // ✅ Clean up abort controller only if it's still ours (prevents race condition
+      // where a newer validation's controller gets nulled by an older run's finally)
+      if (validationAbortController.current === controller) {
+        validationAbortController.current = null;
+      }
     }
   }
 
