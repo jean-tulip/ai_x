@@ -93,10 +93,8 @@ export function ConfirmDialog({
             ref={confirmButtonRef}
             type="button"
             onClick={() => {
-              // Only call onConfirm - let the parent handle closing
-              // Calling both onConfirm and onClose can cause race conditions
-              // when onConfirm already triggers state changes that close the dialog
               onConfirm();
+              onClose();
             }}
             className={`px-6 py-2 text-white font-bold rounded-xl transition-all shadow-lg ${style.button} active:scale-[0.98]`}
           >

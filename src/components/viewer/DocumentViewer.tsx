@@ -123,18 +123,12 @@ export default function DocumentViewer({
         />
       )}
 
-      <div className="flex-1 overflow-auto p-8 flex justify-center items-start bg-slate-300/30">
+      <div className="flex-1 overflow-auto p-6 flex justify-center items-start bg-slate-300/30">
         {!file && !historicalFileName && (
-          <div className="flex flex-col items-center justify-center gap-8 w-full max-w-2xl">
-            <EmptyDocumentState
-              onFileSelect={onFileSelect}
-              onUploadClick={(e) => onPickFile(e)}
-              onStartTBM={onStartTBM}
-            />
-
-            {/* Full mode - Show in empty state */}
+          <div className="flex flex-col items-center gap-6 w-full max-w-2xl">
+            {/* Show recent documents FIRST if available - returning users see their work immediately */}
             {onLoadDocument && currentProjectId && (
-              <div className="w-full px-4">
+              <div className="w-full">
                 <RecentDocuments
                   currentProjectId={currentProjectId}
                   currentReportId={currentReportId}
@@ -144,6 +138,13 @@ export default function DocumentViewer({
                 />
               </div>
             )}
+
+            {/* Upload area - shown below recent docs or as primary if no recent docs */}
+            <EmptyDocumentState
+              onFileSelect={onFileSelect}
+              onUploadClick={(e) => onPickFile(e)}
+              onStartTBM={onStartTBM}
+            />
           </div>
         )}
 

@@ -82,13 +82,16 @@ export function RecentDocuments({ currentProjectId, currentReportId, onSelectDoc
   // Full mode - for empty state (always expanded, no collapse button)
   if (mode === "full") {
     return (
-      <div className="w-full">
+      <div className="w-full bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
-          <span className="material-symbols-outlined text-slate-500 dark:text-slate-400">
-            folder_open
+          <span className="material-symbols-outlined text-blue-500 dark:text-blue-400">
+            history
           </span>
-          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-            또는 최근 작업 문서에서 선택
+          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+            최근 작업 문서
+          </span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">
+            클릭하여 이어서 작업
           </span>
         </div>
 
