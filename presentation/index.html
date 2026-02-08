@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스마트 안전지킴이 - Team Luna</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #22c55e;
+      --primary-dim: rgba(34, 197, 94, 0.15);
+      --danger: #ef4444;
+      --danger-dim: rgba(239, 68, 68, 0.15);
+      --warning: #f59e0b;
+      --bg: #09090b;
+      --surface: #18181b;
+      --border: #27272a;
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+    }
+
+    /* Layout */
+    .slides {
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 100px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Progress */
+    .progress {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      height: 2px;
+      background: var(--primary);
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+
+    /* Counter */
+    .counter {
+      position: fixed;
+      bottom: 32px;
+      right: 48px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Typography */
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+    }
+
+    h2 {
+      font-size: 52px;
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: -1px;
+    }
+
+    .lead {
+      font-size: 22px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 680px;
+    }
+
+    .hl { color: var(--primary); }
+    .hl-danger { color: var(--danger); }
+    .dim { color: var(--text-dim); }
+
+    /* Citation */
+    .citation {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      background: var(--surface);
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin-top: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .citation::before {
+      content: "출처";
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .card .icon {
+      font-size: 28px;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    /* Stat */
+    .stat-huge {
+      font-size: 140px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -4px;
+    }
+
+    .stat-label {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    /* ================ SLIDES ================ */
+
+    /* Slide 1: Title */
+    .slide-title {
+      align-items: center;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+
+    .badge .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 50%;
+    }
+
+    .slide-title h1 {
+      margin-bottom: 20px;
+    }
+
+    .slide-title .tagline {
+      font-size: 24px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Slide 2: Hook */
+    .slide-hook {
+      align-items: center;
+      text-align: center;
+    }
+
+    .hook-question {
+      font-size: 42px;
+      font-weight: 700;
+      line-height: 1.4;
+      max-width: 800px;
+    }
+
+    .hook-subtext {
+      font-size: 20px;
+      color: var(--text-dim);
+      margin-top: 32px;
+    }
+
+    /* Slide 3: Stats */
+    .slide-stats {
+      align-items: center;
+      text-align: center;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 48px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .stat-card .number {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--danger);
+      line-height: 1;
+    }
+
+    .stat-card .unit {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--danger);
+    }
+
+    .stat-card .label {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .stat-card .source {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Slide 4: Hidden Problem */
+    .slide-problem .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .slide-problem .left h2 {
+      margin-bottom: 24px;
+    }
+
+    .problem-list {
+      list-style: none;
+      margin-top: 32px;
+    }
+
+    .problem-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    .problem-list li:last-child {
+      border-bottom: none;
+    }
+
+    .problem-list .material-symbols-outlined {
+      color: var(--danger);
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Slide 5: Insight */
+    .slide-insight {
+      align-items: center;
+      text-align: center;
+    }
+
+    .insight-box {
+      background: var(--primary-dim);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 16px;
+      padding: 48px 64px;
+      margin-top: 40px;
+    }
+
+    .insight-box p {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Slide 6: Solution */
+    .slide-solution .solution-header {
+      margin-bottom: 48px;
+    }
+
+    .solution-features {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .feature-card .material-symbols-outlined {
+      font-size: 36px;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+
+    .feature-card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* Slide 7: Demo */
+    .slide-demo {
+      align-items: center;
+      text-align: center;
+    }
+
+    .demo-scenario {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 56px;
+      margin: 40px 0;
+      max-width: 800px;
+      text-align: left;
+    }
+
+    .demo-scenario p {
+      font-size: 18px;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .demo-scenario p:last-child {
+      margin-bottom: 0;
+    }
+
+    .demo-scenario strong {
+      color: var(--text);
+    }
+
+    .demo-scenario .highlight-line {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .demo-steps {
+      display: flex;
+      gap: 48px;
+      margin-top: 40px;
+    }
+
+    .demo-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+
+    .demo-step .num {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary);
+      color: var(--bg);
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    /* Slide 8: Can/Can't */
+    .slide-cancant h2 {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .cancant-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .cancant-col h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .cancant-col.can h3 {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .cancant-col.cant h3 {
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .cancant-col ul {
+      list-style: none;
+    }
+
+    .cancant-col li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      font-size: 15px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cancant-col li:last-child {
+      border-bottom: none;
+    }
+
+    .cancant-col.can li .material-symbols-outlined {
+      color: var(--primary);
+      font-size: 20px;
+    }
+
+    .cancant-col.cant li .material-symbols-outlined {
+      color: var(--danger);
+      font-size: 20px;
+    }
+
+    /* Slide 9: Challenges */
+    .slide-challenges h2 {
+      margin-bottom: 48px;
+    }
+
+    .challenges-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .challenge-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .challenge-card .num {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--warning);
+      margin-bottom: 16px;
+    }
+
+    .challenge-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .challenge-card p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* Slide 10: Closing */
+    .slide-closing {
+      align-items: center;
+      text-align: center;
+    }
+
+    .closing-statement {
+      font-size: 28px;
+      color: var(--text-muted);
+      max-width: 700px;
+      line-height: 1.8;
+      margin: 40px 0;
+    }
+
+    .closing-statement strong {
+      color: var(--text);
+    }
+
+    .closing-statement .em {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .team-footer {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 20px 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-top: 32px;
+    }
+
+    .team-footer span {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .team-footer strong {
+      color: var(--text);
+    }
+
+    .team-footer .divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+    }
+
+    /* Nav hint */
+    .nav-hint {
+      position: fixed;
+      bottom: 32px;
+      left: 48px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .nav-hint kbd {
+      display: inline-block;
+      padding: 3px 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      margin: 0 2px;
+    }
+
+    /* Speaker notes indicator */
+    .has-notes::after {
+      content: "📝";
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 16px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <div class="slides">
+
+    <!-- ============ SLIDE 1: Title ============ -->
+    <div class="slide slide-title active">
+      <div class="badge">
+        <span>GNU RISE AI+X 2026</span>
+        <div class="dot"></div>
+        <span>Team Luna</span>
+      </div>
+      <h1>스마트 안전지킴이</h1>
+      <p class="tagline">AI 기반 건설 안전서류 검증 시스템</p>
+    </div>
+
+    <!-- ============ SLIDE 2: Hook ============ -->
+    <div class="slide slide-hook">
+      <p class="hook-question">
+        매년 <span class="hl-danger">수백만 장</span>의 안전서류가 작성됩니다.<br>
+        <span class="dim">그런데, 누가 읽을까요?</span>
+      </p>
+      <p class="hook-subtext">
+        서류는 쌓이고, 사고는 계속됩니다.
+      </p>
+    </div>
+
+    <!-- ============ SLIDE 3: Statistics ============ -->
+    <div class="slide slide-stats">
+      <div class="eyebrow">현실의 숫자들</div>
+      <h2>안전서류가 있어도, <span class="hl-danger">사고는 멈추지 않습니다</span></h2>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="number">2,098<span class="unit">명</span></div>
+          <div class="label">2024년 산업재해 사망자</div>
+          <div class="source">고용노동부, 2025.01</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">36.4<span class="unit">조원</span></div>
+          <div class="label">연간 경제적 손실</div>
+          <div class="source">더나은미래, 2024.10</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">4.4<span class="unit">배</span></div>
+          <div class="label">소규모 현장 사망률<br>(대형 대비)</div>
+          <div class="source">MDPI Buildings, 2023</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 4: Hidden Problem ============ -->
+    <div class="slide slide-problem">
+      <div class="content">
+        <div class="left">
+          <div class="eyebrow">숨겨진 문제</div>
+          <h2>서류는 있습니다.<br><span class="hl-danger">검증이 없을 뿐.</span></h2>
+          <p class="lead">
+            안전관리자는 하루에 수십 장의 서류를 받습니다.<br>
+            한 장당 2분씩만 봐도 1시간. 현실적으로 불가능합니다.
+          </p>
+        </div>
+        <div class="right">
+          <ul class="problem-list">
+            <li>
+              <span class="material-symbols-outlined">content_copy</span>
+              <div>
+                <strong>복사-붙여넣기</strong><br>
+                어제 서류를 오늘 날짜로 바꿔서 제출
+              </div>
+            </li>
+            <li>
+              <span class="material-symbols-outlined">check_box</span>
+              <div>
+                <strong>"항상 이상 없음"</strong><br>
+                실제 점검 없이 모든 항목에 체크
+              </div>
+            </li>
+            <li>
+              <span class="material-symbols-outlined">visibility_off</span>
+              <div>
+                <strong>누구도 읽지 않음</strong><br>
+                서명만 하고 서랍에 보관
+              </div>
+            </li>
+            <li>
+              <span class="material-symbols-outlined">warning</span>
+              <div>
+                <strong>사고 후에야 발견</strong><br>
+                "점검표에 이미 기록되어 있었는데..."
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 5: Insight ============ -->
+    <div class="slide slide-insight">
+      <div class="eyebrow">핵심 통찰</div>
+      <h2>문서가 문제가 아닙니다.</h2>
+
+      <div class="insight-box">
+        <p>검증의 부재가 문제입니다.</p>
+      </div>
+
+      <p class="lead" style="margin-top: 40px; text-align: center;">
+        AI가 사람을 대신해 모든 서류를 읽고,<br>
+        <span class="hl">놓치기 쉬운 문제들을 찾아냅니다.</span>
+      </p>
+    </div>
+
+    <!-- ============ SLIDE 6: Solution ============ -->
+    <div class="slide slide-solution">
+      <div class="solution-header">
+        <div class="eyebrow">해결책</div>
+        <h2><span class="hl">스마트 안전지킴이</span>가 하는 일</h2>
+        <p class="lead">5단계 검증 프레임워크로 50개 이상의 규칙을 자동 검사합니다</p>
+      </div>
+
+      <div class="solution-features">
+        <div class="feature-card">
+          <span class="material-symbols-outlined">upload_file</span>
+          <h4>서류 분석</h4>
+          <p>PDF, 이미지 업로드 →<br>AI가 내용 추출 및 검증</p>
+        </div>
+        <div class="feature-card">
+          <span class="material-symbols-outlined">mic</span>
+          <h4>TBM 녹음</h4>
+          <p>안전미팅 녹음 →<br>자동 전사 및 완전성 평가</p>
+        </div>
+        <div class="feature-card">
+          <span class="material-symbols-outlined">photo_camera</span>
+          <h4>사진 교차검증</h4>
+          <p>현장 사진 vs 체크리스트<br>일치 여부 AI 확인</p>
+        </div>
+        <div class="feature-card">
+          <span class="material-symbols-outlined">psychology</span>
+          <h4>부정행위 감지</h4>
+          <p>복사-붙여넣기, 패턴 반복<br>타임라인 공백 탐지</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 7: Demo ============ -->
+    <div class="slide slide-demo">
+      <div class="eyebrow">라이브 데모</div>
+      <h2>직접 보여드리겠습니다</h2>
+
+      <div class="demo-scenario">
+        <p><strong>상황:</strong> 여러분은 건설현장 안전관리자입니다.</p>
+        <p>오늘 아침, 작업자가 제출한 안전점검표가 도착했습니다.</p>
+        <p>이 서류에서 <strong>무엇이 잘못됐는지</strong> 찾을 수 있을까요?</p>
+        <p class="highlight-line">→ AI가 3초 만에 찾아냅니다.</p>
+      </div>
+
+      <div class="demo-steps">
+        <div class="demo-step">
+          <div class="num">1</div>
+          <span>서류 업로드</span>
+        </div>
+        <div class="demo-step">
+          <div class="num">2</div>
+          <span>AI 5단계 분석</span>
+        </div>
+        <div class="demo-step">
+          <div class="num">3</div>
+          <span>문제점 발견</span>
+        </div>
+        <div class="demo-step">
+          <div class="num">4</div>
+          <span>리포트 생성</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 8: Can / Can't ============ -->
+    <div class="slide slide-cancant">
+      <h2>할 수 있는 것과 <span class="dim">할 수 없는 것</span></h2>
+
+      <div class="cancant-grid">
+        <div class="cancant-col can">
+          <h3>
+            <span class="material-symbols-outlined">check_circle</span>
+            할 수 있습니다
+          </h3>
+          <ul>
+            <li>
+              <span class="material-symbols-outlined">check</span>
+              안전서류(PDF/이미지) AI 분석 및 문제점 도출
+            </li>
+            <li>
+              <span class="material-symbols-outlined">check</span>
+              TBM 음성 녹음 → 전사 → 완전성 평가
+            </li>
+            <li>
+              <span class="material-symbols-outlined">check</span>
+              현장 사진과 체크리스트 교차 검증
+            </li>
+            <li>
+              <span class="material-symbols-outlined">check</span>
+              복사-붙여넣기, 패턴 부정행위 감지
+            </li>
+            <li>
+              <span class="material-symbols-outlined">check</span>
+              KOSHA 기준 객관적 위험도 점수 산출
+            </li>
+            <li>
+              <span class="material-symbols-outlined">check</span>
+              검증 결과 PDF 리포트 생성
+            </li>
+          </ul>
+        </div>
+
+        <div class="cancant-col cant">
+          <h3>
+            <span class="material-symbols-outlined">cancel</span>
+            할 수 없습니다
+          </h3>
+          <ul>
+            <li>
+              <span class="material-symbols-outlined">close</span>
+              실시간 현장 모니터링 (CCTV 대체 아님)
+            </li>
+            <li>
+              <span class="material-symbols-outlined">close</span>
+              100% 정확도 보장 (AI의 한계)
+            </li>
+            <li>
+              <span class="material-symbols-outlined">close</span>
+              손글씨/저화질 스캔 완벽 인식
+            </li>
+            <li>
+              <span class="material-symbols-outlined">close</span>
+              인간 안전관리자 대체 (보조 도구)
+            </li>
+            <li>
+              <span class="material-symbols-outlined">close</span>
+              오프라인 환경에서 사용
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 9: Challenges ============ -->
+    <div class="slide slide-challenges">
+      <div class="eyebrow">도전 과제</div>
+      <h2>우리가 마주한 <span class="hl">현실적인 어려움</span></h2>
+
+      <div class="challenges-grid">
+        <div class="challenge-card">
+          <div class="num">01</div>
+          <h4>OCR 정확도</h4>
+          <p>손글씨, 저화질 스캔, 구겨진 서류 등 현장 문서의 인식 한계. 지속적인 모델 개선 필요.</p>
+        </div>
+        <div class="challenge-card">
+          <div class="num">02</div>
+          <h4>현장 적용성</h4>
+          <p>IT에 익숙하지 않은 현장 근로자를 위한 직관적 UX 설계. 교육 없이 사용 가능해야 함.</p>
+        </div>
+        <div class="challenge-card">
+          <div class="num">03</div>
+          <h4>확장성</h4>
+          <p>AI API 비용, 대규모 도입 시 인프라 문제. 온프레미스 배포 옵션 검토 중.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 10: Closing ============ -->
+    <div class="slide slide-closing">
+      <h2>사고는 서류에서<br><span class="hl">예방됩니다</span></h2>
+
+      <p class="closing-statement">
+        CCTV는 사고를 <strong>'기록'</strong>합니다.<br>
+        스마트 안전지킴이는 사고를 <span class="em">'예방'</span>합니다.
+      </p>
+
+      <p class="lead" style="text-align: center;">
+        읽히지 않는 서류는 의미가 없습니다.<br>
+        AI가 모든 서류를 읽고, 빈틈을 찾습니다.
+      </p>
+
+      <div class="team-footer">
+        <span><strong>Team Luna</strong></span>
+        <div class="divider"></div>
+        <span>GNU RISE AI+X 2026</span>
+        <div class="divider"></div>
+        <span>github.com/jean-tulip/ai_x</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="counter">
+    <span id="current">1</span> / <span id="total">10</span>
+  </div>
+
+  <div class="nav-hint">
+    <kbd>←</kbd> <kbd>→</kbd> 또는 <kbd>Space</kbd>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    const progress = document.getElementById('progress');
+    const currentEl = document.getElementById('current');
+    const totalEl = document.getElementById('total');
+
+    let current = 0;
+    totalEl.textContent = total;
+
+    function goTo(index) {
+      if (index < 0 || index >= total) return;
+      slides[current].classList.remove('active');
+      current = index;
+      slides[current].classList.add('active');
+      progress.style.width = ((current + 1) / total * 100) + '%';
+      currentEl.textContent = current + 1;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        goTo(current + 1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goTo(current - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goTo(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goTo(total - 1);
+      }
+    });
+
+    // Touch
+    let touchStart = 0;
+    document.addEventListener('touchstart', e => touchStart = e.touches[0].clientX);
+    document.addEventListener('touchend', e => {
+      const diff = touchStart - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) diff > 0 ? goTo(current + 1) : goTo(current - 1);
+    });
+
+    // Click
+    document.addEventListener('click', e => {
+      if (e.target.closest('a, button, kbd')) return;
+      e.clientX > window.innerWidth * 0.65 ? goTo(current + 1) :
+      e.clientX < window.innerWidth * 0.35 ? goTo(current - 1) : null;
+    });
+  </script>
+</body>
+</html>
