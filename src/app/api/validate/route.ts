@@ -16,6 +16,7 @@ import { DOCUMENT_EXTRACTION_SCHEMA, type DocumentExtraction } from "@/lib/extra
 import { validateAgainstTBM } from "@/lib/tbmCrossValidation";
 import { crossCheckPhotoVsDocument } from "@/lib/photoDocumentCrossCheck";
 import { runContextualSafetyReview } from "@/lib/contextualSafetyReview";
+import { getRootCause } from "@/lib/rootCauseMapping";
 import {
   VERIFICATION_TOOLS,
   shouldVerifyExtraction,
@@ -1110,10 +1111,15 @@ Respond with ONLY a JSON object:
     }
 
     // Merge all issues: validation + structured + risk + pattern + cross-document + TBM + contextual analysis
-    const allIssues = [...validationIssues, ...mismatchIssues, ...structuredIssues, ...riskIssues, ...patternIssues, ...crossDocIssues, ...tbmIssues, ...contextualIssues].map(issue => ({
-      ...issue,
-      id: crypto.randomUUID()
-    }));
+    // Enrich each issue with research-backed root cause classification
+    const allIssues = [...validationIssues, ...mismatchIssues, ...structuredIssues, ...riskIssues, ...patternIssues, ...crossDocIssues, ...tbmIssues, ...contextualIssues].map(issue => {
+      const rc = getRootCause(issue.ruleId);
+      return {
+        ...issue,
+        id: crypto.randomUUID(),
+        rootCause: rc ? { id: rc.id, nameKo: rc.nameKo, nameEn: rc.nameEn } : null,
+      };
+    });
     // --- DB SAVE ---
     // Save the result to the database for history (including Stage 4 fields)
     const extractedChat = Array.isArray((extracted as { chat?: unknown }).chat)

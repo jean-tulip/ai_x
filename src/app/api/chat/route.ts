@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import type { ReportContext } from "@/lib/chatTools";
+import { aggregateRootCauses } from "@/lib/rootCauseMapping";
 
 export const runtime = "nodejs";
 
@@ -167,6 +168,37 @@ function buildSystemPrompt(reportContext: ReportContext | null): string {
 - "사진에서 보면..." 형식으로 구체적 증거를 인용`;
   }
 
+  // Root cause analysis context for cross-source synthesis
+  // Compute from issues if not already provided
+  const rootCauseAnalysis = reportContext?.rootCauseAnalysis || (
+    reportContext?.issues && reportContext.issues.length > 0
+      ? (() => {
+          const agg = aggregateRootCauses(reportContext.issues);
+          return {
+            summary: agg.summary,
+            primaryRootCause: agg.primary ? {
+              id: agg.primary.id,
+              nameKo: agg.primary.nameKo,
+              nameEn: agg.primary.nameEn,
+            } : null,
+            counts: agg.counts,
+          };
+        })()
+      : null
+  );
+
+  if (rootCauseAnalysis && rootCauseAnalysis.primaryRootCause) {
+    systemPrompt += `\n\n[근본 원인 분석 - 연구 기반]`;
+    systemPrompt += `\n${rootCauseAnalysis.summary}`;
+    systemPrompt += `\n주요 근본 원인: ${rootCauseAnalysis.primaryRootCause.nameKo} (${rootCauseAnalysis.primaryRootCause.nameEn})`;
+    systemPrompt += `\n\n근본 원인 기반 종합 분석 시:`;
+    systemPrompt += `\n- 문서에서 발견된 근본 원인이 TBM 기록에서도 확인되는지 분석`;
+    systemPrompt += `\n- 같은 근본 원인이 사진 증거와도 일치하는지 확인`;
+    systemPrompt += `\n- 예: 문서에서 "보호구 미제공(RC02)" 발견 → TBM에서 보호구 논의 누락 → 사진에서 보호구 미착용 = 세 자료 모두 RC02 확인`;
+    systemPrompt += `\n- 근본 원인이 한 자료에서만 나타나면 "추가 확인 필요"로 표시`;
+    systemPrompt += `\n- 시정조치 요청서 작성 시 근본 원인을 명시하여 재발 방지 조치 포함`;
+  }
+
   // Three-way synthesis guide when all sources are available
   if (reportContext?.tbmContext && reportContext?.photoFindings && extracted) {
     systemPrompt += `\n\n[종합 분석 가이드]
@@ -175,7 +207,8 @@ function buildSystemPrompt(reportContext: ReportContext | null): string {
 1. TBM에서 논의된 위험요인이 점검표에 반영되었는지 확인
 2. 점검표에 ✔로 표시된 항목이 현장 사진에서 실제로 이행되었는지 확인
 3. 세 자료 간 불일치가 있으면 구체적으로 지적
-4. "TBM→문서→현장" 순서로 안전 이행 과정을 추적하여 설명`;
+4. "TBM→문서→현장" 순서로 안전 이행 과정을 추적하여 설명
+5. 근본 원인이 식별되었다면 세 자료를 관통하는 근본 원인 패턴을 설명하고, 시정조치에 근본 원인 해소 방안을 포함`;
   }
 
   // Corrective action notice format instructions

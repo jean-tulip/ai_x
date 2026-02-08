@@ -108,6 +108,11 @@ export interface ValidationIssue {
   score?: number; // Stage 4: Severity score
   isAIFixable?: boolean; // Whether AI can suggest a fix (false for signatures, photos, physical inspections)
   path?: string; // Path to specific field or section
+  rootCause?: {  // Research-backed root cause classification
+    id: string;
+    nameKo: string;
+    nameEn: string;
+  } | null;
 }
 
 export type Issue = ValidationIssue & { id?: string };
