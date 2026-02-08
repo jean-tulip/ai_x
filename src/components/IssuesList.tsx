@@ -71,6 +71,7 @@ interface Issue {
   ruleId?: string;
   confidence?: number;
   isAIFixable?: boolean; // Whether AI can suggest a fix (false for photos, signatures)
+  rootCause?: { id: string; nameKo: string; nameEn: string; } | null; // Research-based root cause
 }
 
 interface IssuesListProps {
@@ -225,10 +226,17 @@ export function IssuesList({ issues, loading, onConfirm, onFix, onCorrectiveActi
                 )}`}
               >
                 <div className="flex items-start justify-between mb-2 gap-2">
-                  <h4 className={`font-bold text-sm flex items-center gap-1.5 ${severityColor(issue.severity, issue.ruleId)}`}>
-                    <span className="material-symbols-outlined text-base">{severityIcon(issue.severity, issue.ruleId)}</span>
-                    {issue.title}
-                  </h4>
+                  <div className="flex flex-col gap-1">
+                    <h4 className={`font-bold text-sm flex items-center gap-1.5 ${severityColor(issue.severity, issue.ruleId)}`}>
+                      <span className="material-symbols-outlined text-base">{severityIcon(issue.severity, issue.ruleId)}</span>
+                      {issue.title}
+                    </h4>
+                    {issue.rootCause && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-700 w-fit">
+                        {issue.rootCause.nameKo}
+                      </span>
+                    )}
+                  </div>
                   {issue.confidence !== undefined && (
                     <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full text-slate-500 whitespace-nowrap">
                       {issue.confidence}%
