@@ -381,13 +381,18 @@
 
     .slide-architecture .arch-container {
       width: 100%;
-      max-width: 1100px;
-      margin-top: 32px;
+      max-width: 100%;
+      margin-top: 8px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .slide-architecture .arch-container object {
-      width: 100%;
+      width: 95vw;
       height: auto;
+      max-height: 80vh;
     }
 
     /* Synthesis Architecture Diagram */
@@ -971,39 +976,56 @@
       <p class="tagline">AI 기반 건설 안전서류 검증 시스템</p>
     </div>
 
-    <!-- ============ SLIDE 2: Hook ============ -->
-    <div class="slide slide-hook">
-      <p class="hook-question">
-        매년 <span class="hl-danger">수백만 장</span>의 안전서류가 작성됩니다.<br>
-        <span class="dim">그런데, 누가 읽을까요?</span>
-      </p>
-      <p class="hook-subtext">
-        서류는 쌓이고, 사고는 계속됩니다.
-      </p>
-    </div>
-
-    <!-- ============ SLIDE 3: Statistics ============ -->
-    <div class="slide slide-stats">
-      <div class="eyebrow">연구 기반 통계</div>
-      <h2>소규모 현장, <span class="hl-danger">불균형한 위험</span></h2>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="number">91.5<span class="unit">%</span></div>
-          <div class="label">전체 건설현장 중<br>소규모 현장 비율</div>
-          <div class="source">Hwang et al., Buildings 2023</div>
+    <!-- ============ SLIDE 2: Hook + Stats (Merged) ============ -->
+    <div class="slide slide-hook" style="padding: 40px 60px;">
+      <div style="display: flex; align-items: center; gap: 50px;">
+        <!-- Left: Big number + context -->
+        <div style="text-align: center; min-width: 280px;">
+          <div style="font-size: 110px; font-weight: 900; color: var(--danger); line-height: 1; letter-spacing: -3px;">2,098</div>
+          <p style="font-size: 16px; color: var(--text-muted); margin-top: 8px;">2024년 산업재해 사망자 수</p>
+          <p style="font-size: 13px; color: var(--text-dim); margin-top: 16px; line-height: 1.6;">
+            연간 <strong style="color: var(--danger);">36조원</strong> 손실<br>
+            <span style="font-size: 11px;">— 많은 국가의 GDP보다 큽니다</span>
+          </p>
         </div>
-        <div class="stat-card">
-          <div class="number">72.3<span class="unit">%</span></div>
-          <div class="label">소규모 현장에서 발생하는<br>건설업 사망사고 비율</div>
-          <div class="source">Hwang et al., Buildings 2023</div>
-        </div>
-        <div class="stat-card">
-          <div class="number">4.43<span class="unit">배</span></div>
-          <div class="label">대형 현장 대비<br>소규모 현장 사망률</div>
-          <div class="source">Hwang et al., Buildings 2023</div>
+
+        <!-- Right: Stats grid -->
+        <div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--text);">91.5<span style="font-size: 14px;">%</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">소규모 현장 비율</div>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--text);">72.3<span style="font-size: 14px;">%</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">소규모 현장 사망비율</div>
+            </div>
+            <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--danger);">4.4<span style="font-size: 14px;">배</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">소규모 현장 사망률</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px;">
+            <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--danger);">36.4<span style="font-size: 14px;">조원</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">2023년 경제적 손실</div>
+            </div>
+            <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--danger);">150.7<span style="font-size: 14px;">조원</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">5년 누적 손실</div>
+            </div>
+          </div>
+
+          <div style="font-size: 9px; color: var(--text-light); margin-top: 10px; text-align: right;">
+            출처: Hwang et al., Buildings 2023 / 더나은미래, 2024
+          </div>
         </div>
       </div>
+
+      <p style="font-size: 17px; color: var(--text-dim); margin-top: 28px; text-align: center;">
+        서류는 쌓이고, 사고는 계속됩니다.
+      </p>
     </div>
 
     <!-- ============ SLIDE 4: Hidden Problem ============ -->
@@ -1055,14 +1077,14 @@
     <!-- ============ SLIDE 5: Insight ============ -->
     <div class="slide slide-insight">
       <div class="eyebrow">핵심 통찰</div>
-      <h2>문서가 문제가 아닙니다.</h2>
+      <h2>문서는 있습니다.</h2>
 
       <div class="insight-box">
-        <p>검증의 부재가 문제입니다.</p>
+        <p>읽고 검증하는 시스템이 없습니다.</p>
       </div>
 
       <p class="lead" style="margin-top: 40px; text-align: center;">
-        "사고 패턴은 복잡하고 종종 보이지 않아, 근본 원인 파악이 어렵다"<br>
+        "소규모 현장의 안전 조치는 과소평가되며, 체계적 준비가 부족하다"<br>
         <span class="hl">AI가 사람을 대신해 모든 서류를 읽고, 숨겨진 문제를 찾습니다.</span>
       </p>
     </div>
@@ -1099,110 +1121,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 7: Architecture ============ -->
-    <div class="slide slide-architecture">
-      <div class="eyebrow">시스템 구성</div>
-      <h2>3개 소스 → <span class="hl">1개 지능</span></h2>
-
-      <div class="synthesis-arch">
-        <!-- Source Layer -->
-        <div class="source-layer">
-          <div class="source-box doc">
-            <span class="material-symbols-outlined icon">description</span>
-            <h4>안전서류</h4>
-            <p>PDF, 이미지 분석</p>
-          </div>
-          <div class="source-box tbm">
-            <span class="material-symbols-outlined icon">mic</span>
-            <h4>TBM 음성</h4>
-            <p>Whisper 전사</p>
-          </div>
-          <div class="source-box photo">
-            <span class="material-symbols-outlined icon">photo_camera</span>
-            <h4>현장 사진</h4>
-            <p>Vision AI 분석</p>
-          </div>
-        </div>
-
-        <div class="flow-arrows">
-          <span>↓</span>
-          <span>↓</span>
-          <span>↓</span>
-        </div>
-
-        <!-- Context Layer -->
-        <div class="context-layer">
-          <div class="context-box">
-            <strong>이슈 + 근본원인 태그</strong>
-            RC01~RC07 분류
-          </div>
-          <div class="context-box">
-            <strong>TBM 컨텍스트</strong>
-            완전성 + 참여도 추정
-          </div>
-          <div class="context-box">
-            <strong>사진 발견사항</strong>
-            PPE, 안전시설 확인
-          </div>
-        </div>
-
-        <div class="flow-arrows" style="gap: 0;">
-          <span>↘</span>
-          <span style="margin: 0 40px;">↓</span>
-          <span>↙</span>
-        </div>
-
-        <!-- Synthesis Box -->
-        <div class="synthesis-box">
-          <h4>🧠 AI 종합 분석 엔진</h4>
-          <div class="synthesis-features">
-            <span>📊 근본 원인 추적 (Brief #1)</span>
-            <span>⚠️ 추락 위험 우선화 (Brief #2)</span>
-            <span>💬 참여도 추정 (Brief #3)</span>
-          </div>
-        </div>
-
-        <div class="flow-arrows" style="gap: 0;">
-          <span>↓</span>
-        </div>
-
-        <div class="ai-output">
-          종합 분석 리포트 + 시정조치 요청서 생성
-        </div>
-      </div>
-    </div>
-
-    <!-- ============ SLIDE 7b: Cross-Source Synthesis ============ -->
-    <div class="slide slide-synthesis">
-      <div class="eyebrow">핵심 기능</div>
-      <h2>교차 소스 <span class="hl">종합 분석</span></h2>
-
-      <div class="synthesis-highlight">
-        <div class="big-stat">3 → 1</div>
-        <div class="stat-label">서류 + TBM + 사진을 <strong>하나의 맥락</strong>으로 분석</div>
-
-        <div class="synthesis-examples">
-          <div class="synth-example doc">
-            <div class="source-tag">📄 서류에서</div>
-            <p>"비계 설치 및 외벽 작업"<br>→ 추락 위험 감지<br>→ <strong>RC02</strong> (안전장비 미제공)</p>
-          </div>
-          <div class="synth-example tbm">
-            <div class="source-tag">🎤 TBM에서</div>
-            <p>"안전대 착용 강조"<br>→ 서류와 일치 확인<br>→ 참여도 추정: 양호</p>
-          </div>
-          <div class="synth-example photo">
-            <div class="source-tag">📷 사진에서</div>
-            <p>작업자 3명 촬영<br>→ 안전대 미착용 1명<br>→ <strong>교차검증 불일치</strong></p>
-          </div>
-        </div>
-
-        <p class="synthesis-conclusion">
-          "3개를 따로 보면 못 잡지만, 함께 보면 잡힙니다"
-        </p>
-      </div>
-    </div>
-
-    <!-- ============ SLIDE 8: Research Evidence ============ -->
+    <!-- ============ SLIDE 7: Research Evidence ============ -->
     <div class="slide slide-research">
       <div class="eyebrow">연구 기반</div>
       <h2>AI 안전 관리, <span class="hl">연구가 증명합니다</span></h2>
@@ -1235,7 +1154,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 9: Root Cause Mapping ============ -->
+    <!-- ============ SLIDE 8: Root Cause Mapping ============ -->
     <div class="slide slide-mapping">
       <div class="eyebrow">연구 → 기능 매핑</div>
       <h2>사고 원인 <span class="hl">7가지</span>, 우리의 해결책</h2>
@@ -1295,7 +1214,114 @@
       <p class="mapping-source">근본 원인 출처: Hwang et al., Buildings 2023 / MDPI Systematic Review 2025</p>
     </div>
 
-    <!-- ============ SLIDE 10: Demo ============ -->
+    <!-- ============ SLIDE 9: Architecture (Full System) ============ -->
+    <div class="slide slide-architecture" style="padding: 30px 50px;">
+      <div class="eyebrow">시스템 구성</div>
+      <h2 style="font-size: 36px; margin-bottom: 12px;">어떻게 작동하나요?</h2>
+
+      <div class="arch-container">
+        <object type="image/svg+xml" data="architecture.svg" aria-label="시스템 구성"></object>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 10: Synthesis (Merged) ============ -->
+    <div class="slide slide-architecture" style="padding: 35px 50px;">
+      <div class="eyebrow">핵심 아키텍처</div>
+      <h2 style="font-size: 34px; margin-bottom: 16px;">3개 소스 → <span class="hl">1개 지능</span></h2>
+
+      <div style="display: flex; gap: 30px; align-items: stretch;">
+        <!-- Left: Full Flow diagram -->
+        <div style="flex: 1.2;">
+          <!-- Source Layer -->
+          <div style="display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
+            <div style="flex: 1; text-align: center; padding: 14px 10px; background: var(--bg); border: 2px solid var(--primary); border-radius: 10px;">
+              <span class="material-symbols-outlined" style="color: var(--primary); font-size: 26px;">description</span>
+              <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">안전서류</div>
+              <div style="font-size: 9px; color: var(--text-dim);">PDF, 이미지</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: 14px 10px; background: var(--bg); border: 2px solid var(--purple); border-radius: 10px;">
+              <span class="material-symbols-outlined" style="color: var(--purple); font-size: 26px;">mic</span>
+              <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">TBM 음성</div>
+              <div style="font-size: 9px; color: var(--text-dim);">Whisper 전사</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: 14px 10px; background: var(--bg); border: 2px solid var(--cyan); border-radius: 10px;">
+              <span class="material-symbols-outlined" style="color: var(--cyan); font-size: 26px;">photo_camera</span>
+              <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">현장 사진</div>
+              <div style="font-size: 9px; color: var(--text-dim);">Vision AI</div>
+            </div>
+          </div>
+
+          <div style="text-align: center; font-size: 18px; color: var(--text-light); margin: 6px 0;">↓ ↓ ↓</div>
+
+          <!-- Context Layer -->
+          <div style="display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
+            <div style="flex: 1; background: var(--surface); border: 1px dashed var(--border-dark); border-radius: 8px; padding: 10px; text-align: center;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--text);">이슈 + 근본원인</div>
+              <div style="font-size: 9px; color: var(--text-dim);">RC01~RC07 분류</div>
+            </div>
+            <div style="flex: 1; background: var(--surface); border: 1px dashed var(--border-dark); border-radius: 8px; padding: 10px; text-align: center;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--text);">TBM 컨텍스트</div>
+              <div style="font-size: 9px; color: var(--text-dim);">완전성 + 참여도</div>
+            </div>
+            <div style="flex: 1; background: var(--surface); border: 1px dashed var(--border-dark); border-radius: 8px; padding: 10px; text-align: center;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--text);">사진 발견사항</div>
+              <div style="font-size: 9px; color: var(--text-dim);">PPE, 안전시설</div>
+            </div>
+          </div>
+
+          <div style="text-align: center; font-size: 18px; color: var(--text-light); margin: 6px 0;">↘ ↓ ↙</div>
+
+          <!-- Synthesis Box -->
+          <div style="background: linear-gradient(135deg, var(--primary-light) 0%, #f0fdf4 100%); border: 2px solid var(--primary); border-radius: 12px; padding: 14px; text-align: center;">
+            <h4 style="font-size: 14px; font-weight: 900; color: var(--primary); margin-bottom: 8px;">🧠 AI 종합 분석 엔진</h4>
+            <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 10px; background: var(--bg); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border);">📊 근본 원인 추적</span>
+              <span style="font-size: 10px; background: var(--bg); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border);">⚠️ 추락 위험 우선화</span>
+              <span style="font-size: 10px; background: var(--bg); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border);">💬 참여도 추정</span>
+            </div>
+          </div>
+
+          <div style="text-align: center; font-size: 18px; color: var(--text-light); margin: 6px 0;">↓</div>
+
+          <div style="background: var(--text); color: white; border-radius: 10px; padding: 10px 16px; font-size: 12px; font-weight: 600; text-align: center;">
+            종합 분석 리포트 + 시정조치 요청서 생성
+          </div>
+        </div>
+
+        <!-- Right: Example with big 3→1 -->
+        <div style="flex: 0.9; display: flex; flex-direction: column;">
+          <div style="background: var(--primary-light); border: 2px solid var(--primary-border); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 12px;">
+            <div style="font-size: 48px; font-weight: 900; color: var(--primary); line-height: 1;">3 → 1</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">서류 + TBM + 사진을 <strong>하나의 맥락</strong>으로</div>
+          </div>
+
+          <div style="flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 12px;">📋 예시: 비계 작업</div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="background: var(--bg); border-radius: 8px; padding: 10px; border-left: 3px solid var(--primary);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--primary);">📄 서류에서</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">"비계 설치 및 외벽 작업" → 추락 위험 감지 → <strong>RC02</strong></div>
+              </div>
+              <div style="background: var(--bg); border-radius: 8px; padding: 10px; border-left: 3px solid var(--purple);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--purple);">🎤 TBM에서</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">"안전대 착용 강조" → 서류와 일치 확인 ✓</div>
+              </div>
+              <div style="background: var(--bg); border-radius: 8px; padding: 10px; border-left: 3px solid var(--danger);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--cyan);">📷 사진에서</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">안전대 미착용 1명 → <strong style="color: var(--danger);">교차검증 불일치!</strong></div>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--primary); font-weight: 600; text-align: center;">
+              "따로 보면 못 잡지만, 함께 보면 잡힙니다"
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 12: Demo ============ -->
     <div class="slide slide-demo">
       <div class="eyebrow">라이브 데모</div>
       <h2>직접 보여드리겠습니다</h2>
@@ -1327,7 +1353,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 11: Can / Can't ============ -->
+    <!-- ============ SLIDE 13: Can / Can't ============ -->
     <div class="slide slide-cancant">
       <h2>할 수 있는 것과 <span class="dim">할 수 없는 것</span></h2>
 
@@ -1396,7 +1422,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 12: Challenges ============ -->
+    <!-- ============ SLIDE 14: Challenges ============ -->
     <div class="slide slide-challenges">
       <div class="eyebrow">도전 과제</div>
       <h2>우리가 마주한 <span class="hl">현실적인 어려움</span></h2>
@@ -1420,13 +1446,54 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 13: Closing ============ -->
+    <!-- ============ SLIDE 15: References ============ -->
+    <div class="slide slide-references">
+      <div class="eyebrow">참고 문헌</div>
+      <h2>연구 기반 <span class="hl">출처</span></h2>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1100px; margin: 32px auto 0; font-size: 13px;">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+          <h4 style="font-size: 12px; color: var(--primary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">사고 통계 & 근본 원인</h4>
+          <ul style="list-style: none; color: var(--text-muted); line-height: 1.8;">
+            <li><strong>Hwang et al. (2023)</strong> — "Analysis of Fatal Accidents in Korean Small Construction Sites" <em>Buildings</em>, 13(10), 2472</li>
+            <li style="margin-top: 8px;"><strong>Kim & Chi (2020)</strong> — "Accident Causation in Korean Construction" <em>Sustainability</em>, 12(8), 3120</li>
+            <li style="margin-top: 8px;"><strong>MDPI (2025)</strong> — "Systematic Review: AI in Construction Safety"</li>
+          </ul>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+          <h4 style="font-size: 12px; color: var(--primary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">AI 기술 검증</h4>
+          <ul style="list-style: none; color: var(--text-muted); line-height: 1.8;">
+            <li><strong>Tixier et al.</strong> — "NLP for Safety Reports" <em>Automation in Construction</em></li>
+            <li style="margin-top: 8px;"><strong>Scientific Reports (2025)</strong> — "ML for Construction Accident Prediction" (XGBoost 89%)</li>
+            <li style="margin-top: 8px;"><strong>ScienceDirect (2024)</strong> — "RAG + Knowledge Graph for Safety" (+21.5%)</li>
+            <li style="margin-top: 8px;"><strong>Peak Index (2025)</strong> — "AI Adoption in Construction Industry"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 1100px; margin: 20px auto 0; font-size: 13px;">
+        <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 12px; padding: 20px;">
+          <h4 style="font-size: 12px; color: var(--danger); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">경제적 손실 & 정부 대응</h4>
+          <ul style="list-style: none; color: var(--text-muted); line-height: 1.8;">
+            <li><strong>36.4조원</strong> — 2023년 산업재해 경제적 손실 (~$27B) <em>더나은미래</em></li>
+            <li style="margin-top: 8px;"><strong>150.7조원</strong> — 5년간 누적 손실 (2019-2023) <em>더나은미래</em></li>
+            <li style="margin-top: 8px;"><strong>37조원</strong> — 2026년 고용노동부 산재예방 예산 <em>Labour Ministry</em></li>
+          </ul>
+        </div>
+      </div>
+
+      <p style="text-align: center; margin-top: 24px; font-size: 12px; color: var(--text-dim);">
+        모든 통계와 연구 결과는 검증된 학술 자료에 기반합니다
+      </p>
+    </div>
+
+    <!-- ============ SLIDE 16: Closing ============ -->
     <div class="slide slide-closing">
       <h2>사고는 서류에서<br><span class="hl">예방됩니다</span></h2>
 
       <p class="closing-statement">
-        CCTV는 사고를 <strong>'기록'</strong>합니다.<br>
-        스마트 안전지킴이는 사고를 <span class="em">'예방'</span>합니다.
+        기존 방식은 사고 <strong>'후'</strong> 대응입니다.<br>
+        스마트 안전지킴이는 사고 <span class="em">'전'</span> 예방입니다.
       </p>
 
       <p class="lead" style="text-align: center;">
@@ -1439,7 +1506,7 @@
         <div class="divider"></div>
         <span>GNU RISE AI+X 2026</span>
         <div class="divider"></div>
-        <span>github.com/jean-tulip/ai_x</span>
+        <span>ai-x-omega.vercel.app</span>
       </div>
     </div>
 
