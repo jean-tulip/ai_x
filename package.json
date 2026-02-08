@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate && node scripts/copy-pdf-worker.mjs",
+    "postinstall": "node scripts/setup-db.mjs && prisma generate && node scripts/copy-pdf-worker.mjs",
     "generate-test-docs": "node tools/generate_pdfs.mjs",
     "generate-test-images": "node tools/generate_images.mjs"
   },
