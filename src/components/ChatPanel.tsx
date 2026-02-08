@@ -181,6 +181,7 @@ export function ChatPanel({
         title: i.title,
         message: i.message,
         ruleId: i.ruleId,
+        rootCause: i.rootCause || null,
       })),
       summary: {
         totalIssues: issues.length,

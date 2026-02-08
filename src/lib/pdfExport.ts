@@ -214,7 +214,7 @@ export async function exportReportToPDF(data: ExportData) {
                     text-align: center;
                     margin-bottom: 40px;
                     padding-bottom: 20px;
-                    border-bottom: 3px solid #22c55e;
+                    border-bottom: 3px solid #334155;
                 }
 
                 .header h1 {
@@ -266,13 +266,12 @@ export async function exportReportToPDF(data: ExportData) {
                 }
 
                 .section-title {
-                    font-size: 20px;
+                    font-size: 18px;
                     font-weight: bold;
-                    color: #0f172a;
+                    color: white;
                     margin-bottom: 15px;
                     padding: 10px 15px;
-                    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-                    color: white;
+                    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
                     border-radius: 6px;
                 }
 
@@ -371,12 +370,12 @@ export async function exportReportToPDF(data: ExportData) {
                 .no-issues {
                     text-align: center;
                     padding: 40px;
-                    color: #22c55e;
+                    color: #334155;
                     font-size: 16px;
                     font-weight: 600;
-                    background: #f0fdf4;
+                    background: #f8fafc;
                     border-radius: 8px;
-                    border: 2px solid #bbf7d0;
+                    border: 2px solid #e2e8f0;
                 }
 
                 /* AI Summary */
@@ -493,20 +492,20 @@ export async function exportReportToPDF(data: ExportData) {
                 .check-fail { color: #dc2626; font-weight: 700; font-size: 16px; }
                 .check-na { color: #94a3b8; font-size: 12px; }
 
-                /* Issue stage headers */
+                /* Issue stage headers - muted, professional colors */
                 .stage-header {
-                    font-size: 14px;
-                    font-weight: 700;
+                    font-size: 13px;
+                    font-weight: 600;
                     padding: 8px 12px;
-                    border-radius: 6px;
+                    border-radius: 4px;
                     margin: 15px 0 10px 0;
-                    color: white;
+                    border-left: 4px solid;
                 }
-                .stage-format { background: linear-gradient(135deg, #ef4444, #dc2626); }
-                .stage-cross { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-                .stage-pattern { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-                .stage-contextual { background: linear-gradient(135deg, #14b8a6, #0d9488); }
-                .stage-photo { background: linear-gradient(135deg, #22c55e, #16a34a); }
+                .stage-format { background: #fef2f2; color: #991b1b; border-color: #dc2626; }
+                .stage-cross { background: #eff6ff; color: #1e40af; border-color: #3b82f6; }
+                .stage-pattern { background: #f5f3ff; color: #5b21b6; border-color: #8b5cf6; }
+                .stage-contextual { background: #f0fdfa; color: #115e59; border-color: #14b8a6; }
+                .stage-photo { background: #f0fdf4; color: #166534; border-color: #22c55e; }
 
                 .tbm-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;}
                 .tbm-text{white-space:pre-wrap;color:#0f172a;font-size:13px;line-height:1.7;}
@@ -516,7 +515,7 @@ export async function exportReportToPDF(data: ExportData) {
                     display: grid;
                     grid-template-columns: repeat(2, 1fr);
                     gap: 10px;
-                    margin-top: 15px;
+                    margin-top: 12px;
                 }
                 .root-cause-item {
                     display: flex;
@@ -524,19 +523,19 @@ export async function exportReportToPDF(data: ExportData) {
                     align-items: center;
                     padding: 10px 15px;
                     background: #f8fafc;
-                    border-radius: 8px;
+                    border-radius: 6px;
                     border: 1px solid #e2e8f0;
                 }
                 .root-cause-label {
                     font-weight: 600;
-                    color: #475569;
+                    color: #334155;
                     font-size: 13px;
                 }
                 .root-cause-count {
                     font-weight: 700;
-                    color: #0d9488;
-                    font-size: 16px;
-                    background: #ccfbf1;
+                    color: #334155;
+                    font-size: 14px;
+                    background: #e2e8f0;
                     padding: 4px 12px;
                     border-radius: 12px;
                 }
@@ -546,8 +545,8 @@ export async function exportReportToPDF(data: ExportData) {
                     border-radius: 4px;
                     font-size: 10px;
                     font-weight: 600;
-                    background: #ccfbf1;
-                    color: #115e59;
+                    background: #f1f5f9;
+                    color: #475569;
                     margin-left: 8px;
                 }
             </style>
@@ -739,14 +738,11 @@ export async function exportReportToPDF(data: ExportData) {
 
                 return `
             <div class="section">
-                <div class="section-title">근본 원인 분석 (연구 기반)</div>
-                <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">
-                    Kim & Chi (2020), Hwang et al. (2023) 연구에 기반한 건설 안전사고 근본 원인 분류
-                </p>
+                <div class="section-title">근본 원인 분류</div>
                 <div class="root-cause-grid">
                     ${rootCauseEntries.map(([id, rc]) => `
                         <div class="root-cause-item">
-                            <span class="root-cause-label">${escapeHtml(rc.nameKo)} <span style="font-size:10px;color:#94a3b8;">(${escapeHtml(rc.nameEn)})</span></span>
+                            <span class="root-cause-label">${escapeHtml(rc.nameKo)}</span>
                             <span class="root-cause-count">${rc.count}건</span>
                         </div>
                     `).join('')}

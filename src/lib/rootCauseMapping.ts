@@ -107,6 +107,9 @@ export const RULE_TO_ROOT_CAUSE: Record<string, RootCauseId> = {
 
   // Missing fields → RC07 (no safety management plan)
   "rule_missing_date": "RC07",
+  "rule_missing_site": "RC07",
+  "rule_missing_work_desc": "RC07",
+  "rule_missing_worker_count": "RC07",
   "rule_missing_inspector": "RC07",
   "completeness_too_short": "RC07",
   "completeness_no_checklist": "RC07",

@@ -30,6 +30,11 @@ interface ExportData {
     title: string;
     message: string;
     ruleId?: string;
+    rootCause?: {
+      id: string;
+      nameKo: string;
+      nameEn: string;
+    } | null;
   }>;
   summary: {
     totalIssues: number;
@@ -137,7 +142,7 @@ function buildHTMLContent(data: ExportData): string {
       font-family:'Nanum Myeongjo', serif;
       line-height:1.8;color:#1e293b;padding:40px;background:white;font-size:14px;
     }
-    .header{text-align:center;margin-bottom:40px;padding-bottom:20px;border-bottom:3px solid #22c55e;}
+    .header{text-align:center;margin-bottom:40px;padding-bottom:20px;border-bottom:3px solid #334155;}
     .header h1{font-size:32px;font-weight:bold;color:#0f172a;margin-bottom:10px;}
     .header .subtitle{font-size:14px;color:#64748b;font-weight:600;}
     .info-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin-bottom:20px;}
@@ -147,8 +152,8 @@ function buildHTMLContent(data: ExportData): string {
     .info-value{color:#0f172a;flex:1;}
     .section{margin-bottom:20px;page-break-inside:avoid;}
     .section-title{
-      font-size:20px;font-weight:bold;color:white;margin-bottom:15px;padding:10px 15px;
-      background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);border-radius:6px;
+      font-size:18px;font-weight:bold;color:white;margin-bottom:15px;padding:10px 15px;
+      background:linear-gradient(135deg,#334155 0%,#1e293b 100%);border-radius:6px;
     }
     .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px;}
     .summary-card{background:white;border:2px solid #e2e8f0;border-radius:8px;padding:15px;text-align:center;}
@@ -173,8 +178,8 @@ function buildHTMLContent(data: ExportData): string {
     .issue-message{color:#64748b;font-size:12px;line-height:1.5;}
     .footer{margin-top:40px;padding-top:20px;border-top:2px solid #e2e8f0;text-align:center;color:#94a3b8;font-size:11px;}
     .no-issues{
-      text-align:center;padding:40px;color:#22c55e;font-size:16px;font-weight:600;
-      background:#f0fdf4;border-radius:8px;border:2px solid #bbf7d0;
+      text-align:center;padding:40px;color:#334155;font-size:16px;font-weight:600;
+      background:#f8fafc;border-radius:8px;border:2px solid #e2e8f0;
     }
 
     /* AI Summary */
@@ -291,20 +296,60 @@ function buildHTMLContent(data: ExportData): string {
     .check-fail { color: #dc2626; font-weight: 700; font-size: 16px; }
     .check-na { color: #94a3b8; font-size: 12px; }
 
-    /* Issue stage headers */
+    /* Issue stage headers - muted, professional colors */
     .stage-header {
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 600;
       padding: 8px 12px;
-      border-radius: 6px;
+      border-radius: 4px;
       margin: 15px 0 10px 0;
-      color: white;
+      border-left: 4px solid;
     }
-    .stage-format { background: linear-gradient(135deg, #ef4444, #dc2626); }
-    .stage-cross { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-    .stage-pattern { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-    .stage-contextual { background: linear-gradient(135deg, #14b8a6, #0d9488); }
-    .stage-photo { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .stage-format { background: #fef2f2; color: #991b1b; border-color: #dc2626; }
+    .stage-cross { background: #eff6ff; color: #1e40af; border-color: #3b82f6; }
+    .stage-pattern { background: #f5f3ff; color: #5b21b6; border-color: #8b5cf6; }
+    .stage-contextual { background: #f0fdfa; color: #115e59; border-color: #14b8a6; }
+    .stage-photo { background: #f0fdf4; color: #166534; border-color: #22c55e; }
+
+    /* Root Cause Summary */
+    .root-cause-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .root-cause-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    .root-cause-label {
+      font-weight: 600;
+      color: #334155;
+      font-size: 13px;
+    }
+    .root-cause-count {
+      font-weight: 700;
+      color: #334155;
+      font-size: 14px;
+      background: #e2e8f0;
+      padding: 4px 12px;
+      border-radius: 12px;
+    }
+    .root-cause-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #475569;
+      margin-left: 8px;
+    }
   </style>
 </head>
 <body>
@@ -470,6 +515,40 @@ function buildHTMLContent(data: ExportData): string {
     </div>
   </div>
 
+  ${(() => {
+    // Calculate root cause summary
+    const rootCauseCounts: Record<string, { nameKo: string; nameEn: string; count: number }> = {};
+    for (const issue of issues) {
+      if (issue.rootCause) {
+        if (!rootCauseCounts[issue.rootCause.id]) {
+          rootCauseCounts[issue.rootCause.id] = {
+            nameKo: issue.rootCause.nameKo,
+            nameEn: issue.rootCause.nameEn,
+            count: 0
+          };
+        }
+        rootCauseCounts[issue.rootCause.id].count++;
+      }
+    }
+    const rootCauseEntries = Object.entries(rootCauseCounts).sort((a, b) => b[1].count - a[1].count);
+
+    if (rootCauseEntries.length === 0) return '';
+
+    return `
+  <div class="section">
+    <div class="section-title">근본 원인 분류</div>
+    <div class="root-cause-grid">
+      ${rootCauseEntries.map(([id, rc]) => `
+        <div class="root-cause-item">
+          <span class="root-cause-label">${escapeHtml(rc.nameKo)}</span>
+          <span class="root-cause-count">${rc.count}건</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+    `;
+  })()}
+
   <div class="section">
     <div class="section-title">발견된 문제점</div>
     ${issues.length === 0 ? `
@@ -496,7 +575,10 @@ function buildHTMLContent(data: ExportData): string {
                     </span>
                   </td>
                   <td>
-                    <div class="issue-title">${escapeHtml(issue.title)}</div>
+                    <div class="issue-title">
+                      ${escapeHtml(issue.title)}
+                      ${issue.rootCause ? `<span class="root-cause-badge">${escapeHtml(issue.rootCause.nameKo)}</span>` : ''}
+                    </div>
                     <div class="issue-message">${escapeHtml(issue.message)}</div>
                   </td>
                 </tr>

@@ -1394,6 +1394,7 @@ export default function Page() {
           title: i.title,
           message: i.message,
           ruleId: i.ruleId,
+          rootCause: i.rootCause || null,
         })),
         tbmSummary: report?.tbmSummary || "",
         tbmTranscript: report?.tbmTranscript || "",
@@ -1454,6 +1455,7 @@ export default function Page() {
             title: i.title,
             message: i.message,
             ruleId: i.ruleId,
+            rootCause: i.rootCause || null,
           })),
           summary: exportData.summary,
         } as any);
