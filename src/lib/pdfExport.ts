@@ -836,29 +836,30 @@ export async function exportReportToPDF(data: ExportData) {
 
             ${data.engagementScore ? `
             <div class="section">
-                <div class="section-title">TBM 참여도 분석</div>
+                <div class="section-title">TBM 참여도 추정</div>
                 <div style="background:${data.engagementScore.level === 'high' ? '#dcfce7' : data.engagementScore.level === 'medium' ? '#fef9c3' : '#fee2e2'};border:1px solid ${data.engagementScore.level === 'high' ? '#86efac' : data.engagementScore.level === 'medium' ? '#fde047' : '#fca5a5'};border-radius:8px;padding:16px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                        <span style="font-weight:700;font-size:15px;">참여도 점수</span>
-                        <span style="font-size:20px;font-weight:700;color:${data.engagementScore.level === 'high' ? '#16a34a' : data.engagementScore.level === 'medium' ? '#ca8a04' : '#dc2626'};">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="font-weight:700;font-size:15px;">참여도 추정</span>
+                        <span style="font-size:18px;font-weight:700;color:${data.engagementScore.level === 'high' ? '#16a34a' : data.engagementScore.level === 'medium' ? '#ca8a04' : '#dc2626'};">
                             ${data.engagementScore.score}점 (${data.engagementScore.levelKo})
                         </span>
                     </div>
+                    <p style="font-size:10px;color:#6b7280;margin-bottom:12px;font-style:italic;">※ 음성 패턴 기반 추정치이며, 실제 상황과 다를 수 있습니다.</p>
                     <div style="display:grid;gap:6px;margin-bottom:12px;">
                         ${data.engagementScore.factors.map(f => `
                             <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 8px;background:${f.detected ? '#f0fdf4' : '#fafafa'};border-radius:4px;">
                                 <span style="color:${f.detected ? '#15803d' : '#9ca3af'};">
-                                    ${f.detected ? '✓' : '✗'} ${escapeHtml(f.nameKo)}
+                                    ${f.detected ? '✓' : '○'} ${escapeHtml(f.nameKo)}
                                 </span>
                                 <span style="color:${f.detected ? '#16a34a' : '#9ca3af'};">
-                                    ${f.detected && f.evidence ? escapeHtml(f.evidence) : (f.detected ? `+${f.impact}` : `${f.impact}`)}
+                                    ${f.detected && f.evidence ? escapeHtml(f.evidence) : ''}
                                 </span>
                             </div>
                         `).join('')}
                     </div>
                     ${data.engagementScore.suggestions.length > 0 ? `
                         <div style="border-top:1px solid ${data.engagementScore.level === 'high' ? '#86efac' : data.engagementScore.level === 'medium' ? '#fde047' : '#fca5a5'};padding-top:10px;">
-                            <div style="font-weight:600;font-size:12px;margin-bottom:6px;">개선 제안:</div>
+                            <div style="font-weight:600;font-size:12px;margin-bottom:6px;">참고 제안:</div>
                             <ul style="margin:0;padding-left:16px;font-size:11px;color:#374151;">
                                 ${data.engagementScore.suggestions.map(s => `<li style="margin-bottom:4px;">${escapeHtml(s)}</li>`).join('')}
                             </ul>

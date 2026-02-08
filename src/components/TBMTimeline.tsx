@@ -332,10 +332,10 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
                             {completeness.score}점 ({getCompletenessLevelKo(completeness.level)})
                           </span>
                         )}
-                        {/* Brief #3: Engagement Badge */}
+                        {/* Brief #3: Engagement Badge (Indicative) */}
                         {engagement && (
-                          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${getEngagementColor(engagement.level)}`}>
-                            참여도 {engagement.score}점
+                          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${getEngagementColor(engagement.level)}`} title="음성 패턴 기반 추정치">
+                            참여 {engagement.levelKo}
                           </span>
                         )}
                       </div>
@@ -479,15 +479,20 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
                       </div>
                     )}
 
-                    {/* Brief #3: Engagement Quality Analysis */}
+                    {/* Brief #3: Engagement Quality Analysis (Indicative) */}
                     {engagement && (
                       <div className={`mb-4 p-3 border rounded-lg ${getEngagementBgColor(engagement.level)}`}>
                         <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1">
-                          <span>💬</span> 참여도 분석
+                          <span>💬</span> 참여도 추정
                           <span className={`ml-2 px-2 py-0.5 text-xs rounded-full border ${getEngagementColor(engagement.level)}`}>
                             {engagement.score}점 ({engagement.levelKo})
                           </span>
                         </h4>
+
+                        {/* Disclaimer */}
+                        <p className="text-[10px] text-gray-500 mb-2 italic">
+                          ※ 음성 패턴 기반 추정치이며, 실제와 다를 수 있습니다
+                        </p>
 
                         {/* Factor breakdown */}
                         <div className="mb-3 space-y-1.5">
@@ -495,12 +500,12 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
                             <div key={idx} className="flex items-center justify-between text-xs">
                               <span className="text-gray-700 flex items-center gap-1">
                                 <span className={factor.detected ? "text-green-500" : "text-gray-400"}>
-                                  {factor.detected ? "✓" : "✗"}
+                                  {factor.detected ? "✓" : "○"}
                                 </span>
                                 {factor.nameKo}
                               </span>
                               <span className={factor.detected ? "text-green-600 font-medium" : "text-gray-400"}>
-                                {factor.detected && factor.evidence ? factor.evidence : (factor.detected ? `+${factor.impact}` : `${factor.impact}`)}
+                                {factor.detected && factor.evidence ? factor.evidence : ""}
                               </span>
                             </div>
                           ))}
@@ -509,7 +514,7 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
                         {/* Suggestions */}
                         {engagement.suggestions && engagement.suggestions.length > 0 && (
                           <div>
-                            <p className="text-xs font-medium text-gray-700 mb-1">개선 제안:</p>
+                            <p className="text-xs font-medium text-gray-700 mb-1">참고 제안:</p>
                             <ul className="text-xs text-gray-600 space-y-1">
                               {engagement.suggestions.map((suggestion, idx) => (
                                 <li key={idx} className="flex items-start gap-1">
