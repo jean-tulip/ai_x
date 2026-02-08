@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/contexts/ToastContext";
 import { exportReportToPDF } from "@/lib/pdfExport";
+import { classifyUserMessage } from "@/lib/chatMessageClassifier";
 
 interface ChatMessage {
   role: "ai" | "user";
@@ -54,10 +55,16 @@ export function ChatPanel({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
 
-  // Reset local chat when the document changes (messages prop changes)
+  // [Brief #5] Capture synthesis and corrective action narratives for PDF export
+  const [synthesisNarrative, setSynthesisNarrative] = useState<string | null>(null);
+  const [correctiveAction, setCorrectiveAction] = useState<string | null>(null);
+
+  // Reset local chat and narrative captures when the document changes (messages prop changes)
   // This ensures follow-up conversation doesn't persist across document switches
   useEffect(() => {
     setChatMessages([]);
+    setSynthesisNarrative(null);
+    setCorrectiveAction(null);
   }, [messages]);
 
   const scrollToBottom = () => {
@@ -98,6 +105,15 @@ export function ChatPanel({
 
           const data = await res.json();
           if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+          // [Brief #5] Capture synthesis/corrective action for PDF export
+          const messageType = classifyUserMessage(externalMessage);
+          if (messageType === "synthesis") {
+            setSynthesisNarrative(data.reply);
+          }
+          if (messageType === "corrective_action") {
+            setCorrectiveAction(data.reply);
+          }
 
           setChatMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
         } catch (e: any) {
@@ -144,6 +160,15 @@ export function ChatPanel({
 
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+    // [Brief #5] Capture synthesis/corrective action for PDF export
+    const messageType = classifyUserMessage(text);
+    if (messageType === "synthesis") {
+      setSynthesisNarrative(data.reply);
+    }
+    if (messageType === "corrective_action") {
+      setCorrectiveAction(data.reply);
+    }
 
     // 3) AI 응답 추가
     setChatMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
@@ -218,6 +243,10 @@ export function ChatPanel({
         mismatches: issues.filter(i => i.ruleId?.startsWith("photo_") && i.severity === "error").length,
         warnings: issues.filter(i => i.ruleId?.startsWith("photo_") && i.severity === "warn").length,
       } : undefined,
+
+      // [Brief #5] Narrative content for PDF restructure
+      synthesisNarrative: synthesisNarrative || undefined,
+      correctiveAction: correctiveAction || undefined,
     };
 
 

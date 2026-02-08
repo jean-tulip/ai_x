@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 
 import { useToast } from "@/contexts/ToastContext";
 import { exportReportToPDF } from "@/lib/pdfExport";
+import { classifyUserMessage } from "@/lib/chatMessageClassifier";
 
 // Stage detection helper
 function getIssueStage(ruleId?: string): string {
@@ -161,9 +162,19 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
     const [isSendingChat, setIsSendingChat] = useState(false);
     const [localChatMessages, setLocalChatMessages] = useState<{ role: "ai" | "user"; text: string }[]>(initialLocalChatMessages);
 
+    // [Brief #5] Capture synthesis and corrective action narratives for PDF export
+    const [synthesisNarrative, setSynthesisNarrative] = useState<string | null>(null);
+    const [correctiveAction, setCorrectiveAction] = useState<string | null>(null);
+
     // Sync localChatMessages when initialLocalChatMessages changes (e.g., project switch, async restore)
+    // Also reset narrative captures when chat context changes
     useEffect(() => {
         setLocalChatMessages(initialLocalChatMessages);
+        // Only reset narratives if we're starting fresh (empty initial messages)
+        if (initialLocalChatMessages.length === 0) {
+            setSynthesisNarrative(null);
+            setCorrectiveAction(null);
+        }
     }, [initialLocalChatMessages]);
 
     // Smart severity filter: Only show buttons for severities that exist in issues
@@ -237,6 +248,15 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
 
             const data = await res.json();
             if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+            // [Brief #5] Capture synthesis/corrective action for PDF export
+            const messageType = classifyUserMessage(text);
+            if (messageType === "synthesis") {
+                setSynthesisNarrative(data.reply);
+            }
+            if (messageType === "corrective_action") {
+                setCorrectiveAction(data.reply);
+            }
 
             // Add AI response
             setLocalChatMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
@@ -465,6 +485,10 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                 mismatches: issues.filter(i => i.ruleId?.startsWith("photo_") && i.severity === "error").length,
                 warnings: issues.filter(i => i.ruleId?.startsWith("photo_") && i.severity === "warn").length,
             } : undefined,
+
+            // [Brief #5] Narrative content for PDF restructure
+            synthesisNarrative: synthesisNarrative || undefined,
+            correctiveAction: correctiveAction || undefined,
         };
 
         try {

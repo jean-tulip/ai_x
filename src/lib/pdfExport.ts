@@ -8,6 +8,10 @@ interface ExportData {
     createdAt: Date;
     tbmSummary?: string;
     tbmTranscript?: string;
+
+    // [Brief #5] Narrative content captured from chat
+    synthesisNarrative?: string;   // AI's three-way synthesis response
+    correctiveAction?: string;     // AI's corrective action notice
     // Brief #3: Engagement quality scoring
     engagementScore?: {
         score: number;

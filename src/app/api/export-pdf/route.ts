@@ -11,6 +11,10 @@ interface ExportData {
   createdAt: string; // ISO string
   tbmSummary?: string;
   tbmTranscript?: string;
+
+  // [Brief #5] Narrative content captured from chat
+  synthesisNarrative?: string;   // AI's three-way synthesis response
+  correctiveAction?: string;     // AI's corrective action notice
   // Brief #3: Engagement quality scoring
   engagementScore?: {
     score: number;
@@ -118,6 +122,10 @@ function buildHTMLContent(data: ExportData): string {
   const tbmSummary = (data.tbmSummary || "").trim();
   const tbmTranscript = (data.tbmTranscript || "").trim();
 
+  // [Brief #5] Check for narrative content
+  const hasSynthesis = !!(data.synthesisNarrative?.trim());
+  const hasCorrectiveAction = !!(data.correctiveAction?.trim());
+
   // Helper to group issues by stage
   function getIssueStage(ruleId?: string): string {
     if (!ruleId) return "stage1-2";
@@ -126,6 +134,40 @@ function buildHTMLContent(data: ExportData): string {
     if (ruleId.startsWith("pattern_")) return "stage4";
     if (ruleId.startsWith("cross_doc_") || ruleId.startsWith("structured_") || ruleId.startsWith("risk_matrix_") || ruleId.startsWith("height_work_")) return "stage3";
     return "stage1-2";
+  }
+
+  // [Brief #5] Build root cause summary HTML
+  function buildRootCauseSummaryHTML(): string {
+    const rootCauseCounts: Record<string, { nameKo: string; nameEn: string; count: number }> = {};
+    for (const issue of issues) {
+      if (issue.rootCause) {
+        if (!rootCauseCounts[issue.rootCause.id]) {
+          rootCauseCounts[issue.rootCause.id] = {
+            nameKo: issue.rootCause.nameKo,
+            nameEn: issue.rootCause.nameEn,
+            count: 0
+          };
+        }
+        rootCauseCounts[issue.rootCause.id].count++;
+      }
+    }
+    const entries = Object.entries(rootCauseCounts).sort((a, b) => b[1].count - a[1].count);
+    if (entries.length === 0) return '';
+
+    const primaryName = entries[0][1].nameKo;
+
+    let html = `<div style="margin-bottom:10px;font-size:14px;font-weight:600;">
+      주요 근본 원인: <span style="background:#6b21a8;color:white;padding:2px 10px;border-radius:4px;font-size:12px;">${escapeHtml(primaryName)}</span>
+    </div>`;
+
+    html += entries.map(([, rc]) => `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;">
+        <span style="background:#f3e8ff;color:#6b21a8;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">${escapeHtml(rc.nameKo)}</span>
+        <span style="color:#475569;">${rc.count}건</span>
+      </div>
+    `).join('');
+
+    return html;
   }
 
   return `
@@ -350,14 +392,216 @@ function buildHTMLContent(data: ExportData): string {
       color: #475569;
       margin-left: 8px;
     }
+
+    /* [Brief #5] Narrative-First Layout Styles */
+    .situation-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .situation-row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .situation-item {
+      flex: 1;
+      min-width: 120px;
+    }
+    .situation-label {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .situation-value {
+      font-size: 14px;
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    .severity-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .severity-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+    .severity-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .narrative-section {
+      margin-bottom: 24px;
+      padding: 20px 24px;
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      border-radius: 0 8px 8px 0;
+    }
+    .narrative-section.critical {
+      background: #fef2f2;
+      border-left-color: #ef4444;
+    }
+    .narrative-section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+    .narrative-text {
+      font-size: 13px;
+      line-height: 1.9;
+      color: #334155;
+      white-space: pre-wrap;
+    }
+
+    .root-cause-box {
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-radius: 8px;
+    }
+    .root-cause-box h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #6b21a8;
+      margin-bottom: 10px;
+    }
+
+    .corrective-section {
+      margin-bottom: 24px;
+      padding: 20px 24px;
+      background: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      border-radius: 0 8px 8px 0;
+    }
+    .corrective-section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+
+    .evidence-divider {
+      page-break-before: always;
+      margin-top: 0;
+      padding-top: 20px;
+      border-top: 2px solid #e2e8f0;
+    }
+    .evidence-divider h2 {
+      font-size: 18px;
+      color: #475569;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
+  <!-- ============================================ -->
+  <!-- PAGE 1: THE STORY (for site manager)         -->
+  <!-- ============================================ -->
+
   <div class="header">
-    <h1>안전 점검 보고서</h1>
-    <div class="subtitle">스마트 안전지킴이 - 경상남도 중소기업 지원 시스템</div>
+    <h1>안전 문서 검증 보고서</h1>
+    <div class="subtitle">Smart Safety Guardian | ${escapeHtml(data.projectName) || "프로젝트 미지정"}</div>
   </div>
 
+  <!-- Situation Summary - one glance context -->
+  <div class="situation-box">
+    <div class="situation-row">
+      <div class="situation-item">
+        <div class="situation-label">현장 / 프로젝트</div>
+        <div class="situation-value">${escapeHtml(data.extractedData?.fields?.현장명) || escapeHtml(data.projectName) || "-"}</div>
+      </div>
+      <div class="situation-item">
+        <div class="situation-label">점검일</div>
+        <div class="situation-value">${escapeHtml(data.extractedData?.fields?.점검일자) || createdAt.toISOString().split("T")[0]}</div>
+      </div>
+      <div class="situation-item">
+        <div class="situation-label">작업내용</div>
+        <div class="situation-value">${escapeHtml(data.extractedData?.fields?.작업내용) || "-"}</div>
+      </div>
+      <div class="situation-item">
+        <div class="situation-label">문서유형</div>
+        <div class="situation-value">${escapeHtml(data.documentType) || "-"}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Severity Overview - compact bar -->
+  <div class="severity-bar">
+    <div class="severity-item">
+      <div class="severity-dot" style="background: #ef4444;"></div>
+      심각 ${data.summary.criticalCount}건
+    </div>
+    <div class="severity-item">
+      <div class="severity-dot" style="background: #f97316;"></div>
+      경고 ${data.summary.warningCount}건
+    </div>
+    <div class="severity-item">
+      <div class="severity-dot" style="background: #3b82f6;"></div>
+      정보 ${data.summary.infoCount}건
+    </div>
+    <div class="severity-item" style="margin-left: auto; font-weight: 700;">
+      총 ${data.summary.totalIssues}건
+    </div>
+  </div>
+
+  <!-- Synthesis Narrative - THE KEY SECTION -->
+  ${hasSynthesis ? `
+  <div class="narrative-section${data.summary.criticalCount > 0 ? " critical" : ""}">
+    <h3>📋 종합 분석 결과</h3>
+    <div class="narrative-text">${escapeHtml(data.synthesisNarrative)}</div>
+  </div>
+  ` : `
+  <div class="narrative-section">
+    <h3>📋 검증 요약</h3>
+    <div class="narrative-text">${escapeHtml(data.aiSummary) || "AI 분석 결과가 없습니다. 채팅에서 종합 분석을 요청하세요."}</div>
+  </div>
+  `}
+
+  <!-- Root Cause Diagnosis -->
+  ${(() => {
+    const rootCauseHtml = buildRootCauseSummaryHTML();
+    if (!rootCauseHtml) return '';
+    return `
+  <div class="root-cause-box">
+    <h3>🔍 근본 원인 진단</h3>
+    ${rootCauseHtml}
+  </div>
+    `;
+  })()}
+
+  <!-- Corrective Action -->
+  ${hasCorrectiveAction ? `
+  <div class="corrective-section">
+    <h3>📝 시정조치 요청</h3>
+    <div class="narrative-text">${escapeHtml(data.correctiveAction)}</div>
+  </div>
+  ` : ""}
+
+  <!-- ============================================ -->
+  <!-- PAGE 2+: THE EVIDENCE (supporting details)   -->
+  <!-- ============================================ -->
+
+  <div class="evidence-divider">
+    <h2>📎 상세 검증 자료</h2>
+  </div>
+
+  <!-- Original info box (moved to evidence section) -->
   <div class="info-box">
     <div class="info-row">
       <div class="info-label">파일명</div>
@@ -389,15 +633,6 @@ function buildHTMLContent(data: ExportData): string {
       })}</div>
     </div>
   </div>
-
-  ${data.aiSummary ? `
-  <div class="section">
-    <div class="ai-summary">
-      <div class="ai-summary-label">AI 분석 요약</div>
-      ${escapeHtml(data.aiSummary)}
-    </div>
-  </div>
-  ` : ""}
 
   ${data.extractedData?.fields ? `
   <div class="section">
