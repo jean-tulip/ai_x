@@ -16,17 +16,27 @@
     }
 
     :root {
-      --primary: #22c55e;
-      --primary-dim: rgba(34, 197, 94, 0.15);
-      --danger: #ef4444;
-      --danger-dim: rgba(239, 68, 68, 0.15);
-      --warning: #f59e0b;
-      --bg: #09090b;
-      --surface: #18181b;
-      --border: #27272a;
-      --text: #fafafa;
-      --text-muted: #a1a1aa;
-      --text-dim: #71717a;
+      --primary: #16a34a;
+      --primary-light: #dcfce7;
+      --primary-border: #bbf7d0;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --danger-border: #fecaca;
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --warning-border: #fde68a;
+      --purple: #7c3aed;
+      --purple-light: #f5f3ff;
+      --cyan: #0891b2;
+      --bg: #ffffff;
+      --surface: #f9fafb;
+      --surface-alt: #f3f4f6;
+      --border: #e5e7eb;
+      --border-dark: #d1d5db;
+      --text: #111827;
+      --text-muted: #4b5563;
+      --text-dim: #6b7280;
+      --text-light: #9ca3af;
     }
 
     body {
@@ -67,7 +77,7 @@
       position: fixed;
       bottom: 0;
       left: 0;
-      height: 2px;
+      height: 3px;
       background: var(--primary);
       transition: width 0.3s ease;
       z-index: 100;
@@ -102,14 +112,14 @@
     }
 
     h2 {
-      font-size: 52px;
+      font-size: 48px;
       font-weight: 900;
       line-height: 1.2;
       letter-spacing: -1px;
     }
 
     .lead {
-      font-size: 22px;
+      font-size: 20px;
       color: var(--text-muted);
       line-height: 1.7;
       max-width: 680px;
@@ -147,24 +157,6 @@
       padding: 28px;
     }
 
-    .card h3 {
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .card p {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .card .icon {
-      font-size: 28px;
-      color: var(--text-dim);
-      margin-bottom: 16px;
-    }
-
     /* Stat */
     .stat-huge {
       font-size: 140px;
@@ -173,18 +165,13 @@
       letter-spacing: -4px;
     }
 
-    .stat-label {
-      font-size: 28px;
-      font-weight: 700;
-      margin-top: 8px;
-    }
-
     /* ================ SLIDES ================ */
 
     /* Slide 1: Title */
     .slide-title {
       align-items: center;
       text-align: center;
+      background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg) 50%);
     }
 
     .badge {
@@ -192,13 +179,14 @@
       align-items: center;
       gap: 12px;
       padding: 10px 20px;
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 100px;
       font-size: 13px;
       font-weight: 500;
       color: var(--text-muted);
       margin-bottom: 40px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .badge .dot {
@@ -246,22 +234,23 @@
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
+      gap: 24px;
       margin-top: 48px;
       width: 100%;
       max-width: 1000px;
     }
 
     .stat-card {
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 32px 24px;
       text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .stat-card .number {
-      font-size: 48px;
+      font-size: 52px;
       font-weight: 900;
       color: var(--danger);
       line-height: 1;
@@ -282,7 +271,7 @@
 
     .stat-card .source {
       font-size: 10px;
-      color: var(--text-dim);
+      color: var(--text-light);
       margin-top: 12px;
       padding-top: 12px;
       border-top: 1px solid var(--border);
@@ -333,8 +322,8 @@
     }
 
     .insight-box {
-      background: var(--primary-dim);
-      border: 1px solid rgba(34, 197, 94, 0.3);
+      background: var(--primary-light);
+      border: 2px solid var(--primary-border);
       border-radius: 16px;
       padding: 48px 64px;
       margin-top: 40px;
@@ -358,11 +347,12 @@
     }
 
     .feature-card {
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 24px;
       text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .feature-card .material-symbols-outlined {
@@ -400,7 +390,146 @@
       height: auto;
     }
 
-    /* Slide 8: Demo */
+    /* Slide 8: Research */
+    .slide-research h2 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .research-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .research-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .research-card .category {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--purple);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .research-card .stat {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .research-card .desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .research-card .source {
+      font-size: 10px;
+      color: var(--text-light);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Slide 9: Root Cause Mapping */
+    .slide-mapping h2 {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .mapping-table {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .mapping-table th {
+      background: var(--primary);
+      color: white;
+      padding: 14px 16px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mapping-table th:first-child {
+      border-radius: 8px 0 0 0;
+      width: 28%;
+    }
+
+    .mapping-table th:nth-child(2) {
+      width: 24%;
+    }
+
+    .mapping-table th:last-child {
+      border-radius: 0 8px 0 0;
+      width: 48%;
+    }
+
+    .mapping-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    .mapping-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mapping-table tr:last-child td:first-child {
+      border-radius: 0 0 0 8px;
+    }
+
+    .mapping-table tr:last-child td:last-child {
+      border-radius: 0 0 8px 0;
+    }
+
+    .mapping-table tbody tr {
+      background: var(--bg);
+    }
+
+    .mapping-table tbody tr:nth-child(even) {
+      background: var(--surface);
+    }
+
+    .mapping-table .cause {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .mapping-table .feature {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .mapping-table .how {
+      color: var(--text-muted);
+    }
+
+    .mapping-source {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 11px;
+      color: var(--text-light);
+    }
+
+    /* Slide 10: Demo */
     .slide-demo {
       align-items: center;
       text-align: center;
@@ -457,13 +586,13 @@
       align-items: center;
       justify-content: center;
       background: var(--primary);
-      color: var(--bg);
+      color: white;
       border-radius: 50%;
       font-size: 14px;
       font-weight: 900;
     }
 
-    /* Slide 9: Can/Can't */
+    /* Slide 11: Can/Can't */
     .slide-cancant h2 {
       text-align: center;
       margin-bottom: 48px;
@@ -526,7 +655,7 @@
       font-size: 20px;
     }
 
-    /* Slide 10: Challenges */
+    /* Slide 12: Challenges */
     .slide-challenges h2 {
       margin-bottom: 48px;
     }
@@ -538,10 +667,11 @@
     }
 
     .challenge-card {
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .challenge-card .num {
@@ -563,10 +693,11 @@
       line-height: 1.6;
     }
 
-    /* Slide 11: Closing */
+    /* Slide 13: Closing */
     .slide-closing {
       align-items: center;
       text-align: center;
+      background: linear-gradient(180deg, var(--bg) 50%, var(--primary-light) 100%);
     }
 
     .closing-statement {
@@ -591,10 +722,11 @@
       align-items: center;
       gap: 24px;
       padding: 20px 32px;
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 12px;
       margin-top: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .team-footer span {
@@ -630,16 +762,6 @@
       font-family: inherit;
       margin: 0 2px;
     }
-
-    /* Speaker notes indicator */
-    .has-notes::after {
-      content: "📝";
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 16px;
-      opacity: 0.5;
-    }
   </style>
 </head>
 <body>
@@ -671,24 +793,24 @@
 
     <!-- ============ SLIDE 3: Statistics ============ -->
     <div class="slide slide-stats">
-      <div class="eyebrow">현실의 숫자들</div>
-      <h2>안전서류가 있어도, <span class="hl-danger">사고는 멈추지 않습니다</span></h2>
+      <div class="eyebrow">연구 기반 통계</div>
+      <h2>소규모 현장, <span class="hl-danger">불균형한 위험</span></h2>
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="number">2,098<span class="unit">명</span></div>
-          <div class="label">2024년 산업재해 사망자</div>
-          <div class="source">고용노동부, 2025.01</div>
+          <div class="number">91.5<span class="unit">%</span></div>
+          <div class="label">전체 건설현장 중<br>소규모 현장 비율</div>
+          <div class="source">Hwang et al., Buildings 2023</div>
         </div>
         <div class="stat-card">
-          <div class="number">36.4<span class="unit">조원</span></div>
-          <div class="label">연간 경제적 손실</div>
-          <div class="source">더나은미래, 2024.10</div>
+          <div class="number">72.3<span class="unit">%</span></div>
+          <div class="label">소규모 현장에서 발생하는<br>건설업 사망사고 비율</div>
+          <div class="source">Hwang et al., Buildings 2023</div>
         </div>
         <div class="stat-card">
-          <div class="number">4.4<span class="unit">배</span></div>
-          <div class="label">소규모 현장 사망률<br>(대형 대비)</div>
-          <div class="source">MDPI Buildings, 2023</div>
+          <div class="number">4.43<span class="unit">배</span></div>
+          <div class="label">대형 현장 대비<br>소규모 현장 사망률</div>
+          <div class="source">Hwang et al., Buildings 2023</div>
         </div>
       </div>
     </div>
@@ -700,9 +822,9 @@
           <div class="eyebrow">숨겨진 문제</div>
           <h2>서류는 있습니다.<br><span class="hl-danger">검증이 없을 뿐.</span></h2>
           <p class="lead">
-            안전관리자는 하루에 수십 장의 서류를 받습니다.<br>
-            한 장당 2분씩만 봐도 1시간. 현실적으로 불가능합니다.
+            "소규모 현장의 안전 조치는 과소평가되며, 적절한 안전 교육이 부족하다"
           </p>
+          <div class="citation">Hwang et al., Buildings 2023</div>
         </div>
         <div class="right">
           <ul class="problem-list">
@@ -721,16 +843,16 @@
               </div>
             </li>
             <li>
-              <span class="material-symbols-outlined">visibility_off</span>
+              <span class="material-symbols-outlined">event_busy</span>
               <div>
-                <strong>누구도 읽지 않음</strong><br>
-                서명만 하고 서랍에 보관
+                <strong>형식적 TBM</strong><br>
+                "체계적 준비 없이 형식적으로만 진행"
               </div>
             </li>
             <li>
               <span class="material-symbols-outlined">warning</span>
               <div>
-                <strong>사고 후에야 발견</strong><br>
+                <strong>사고 후 발견</strong><br>
                 "점검표에 이미 기록되어 있었는데..."
               </div>
             </li>
@@ -749,8 +871,8 @@
       </div>
 
       <p class="lead" style="margin-top: 40px; text-align: center;">
-        AI가 사람을 대신해 모든 서류를 읽고,<br>
-        <span class="hl">놓치기 쉬운 문제들을 찾아냅니다.</span>
+        "사고 패턴은 복잡하고 종종 보이지 않아, 근본 원인 파악이 어렵다"<br>
+        <span class="hl">AI가 사람을 대신해 모든 서류를 읽고, 숨겨진 문제를 찾습니다.</span>
       </p>
     </div>
 
@@ -792,11 +914,99 @@
       <h2>어떻게 작동하나요?</h2>
 
       <div class="arch-container">
-        <object type="image/svg+xml" data="architecture.svg" aria-label="시스템 아키텍처"></object>
+        <object type="image/svg+xml" data="architecture.svg" aria-label="시스템 구성"></object>
       </div>
     </div>
 
-    <!-- ============ SLIDE 8: Demo ============ -->
+    <!-- ============ SLIDE 8: Research Evidence ============ -->
+    <div class="slide slide-research">
+      <div class="eyebrow">연구 기반</div>
+      <h2>AI 안전 관리, <span class="hl">연구가 증명합니다</span></h2>
+
+      <div class="research-grid">
+        <div class="research-card">
+          <div class="category">NLP 정확도</div>
+          <div class="stat">&gt;95%</div>
+          <div class="desc">NLP 시스템이 비정형 안전 보고서에서 101개 속성을 추출하는 정확도</div>
+          <div class="source">Tixier et al., Automation in Construction</div>
+        </div>
+        <div class="research-card">
+          <div class="category">사고 예측</div>
+          <div class="stat">89%</div>
+          <div class="desc">기계학습 모델(XGBoost)의 건설현장 사고 심각도 예측 정확도</div>
+          <div class="source">Scientific Reports, 2025</div>
+        </div>
+        <div class="research-card">
+          <div class="category">RAG 개선</div>
+          <div class="stat">+21.5%</div>
+          <div class="desc">안전 지식 그래프와 결합한 RAG 모델이 기본 GPT-4 대비 검색 성능 향상</div>
+          <div class="source">ScienceDirect, 2024</div>
+        </div>
+        <div class="research-card">
+          <div class="category">산업 도입</div>
+          <div class="stat">92%</div>
+          <div class="desc">AI 도입을 계획 중이거나 이미 도입한 건설 기업 비율</div>
+          <div class="source">Peak Index, 2025</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 9: Root Cause Mapping ============ -->
+    <div class="slide slide-mapping">
+      <div class="eyebrow">연구 → 기능 매핑</div>
+      <h2>사고 원인 <span class="hl">7가지</span>, 우리의 해결책</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr>
+            <th>사고 근본 원인</th>
+            <th>우리 기능</th>
+            <th>어떻게 해결하나요?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cause">1. 안전 교육 부족</td>
+            <td class="feature">TBM 완전성 평가</td>
+            <td class="how">7개 항목 평가로 안전 주제가 실제로 다뤄졌는지 확인</td>
+          </tr>
+          <tr>
+            <td class="cause">2. 안전장비 미제공</td>
+            <td class="feature">사진 교차검증</td>
+            <td class="how">AI 비전으로 PPE, 소화기, 안전난간 누락 감지</td>
+          </tr>
+          <tr>
+            <td class="cause">3. 안전조치 미이행</td>
+            <td class="feature">5단계 문서 검증</td>
+            <td class="how">서명만 있는 게 아닌, 완전하고 논리적인지 검증</td>
+          </tr>
+          <tr>
+            <td class="cause">4. 위험한 작업조건</td>
+            <td class="feature">문서 내 논리검증</td>
+            <td class="how">고소작업인데 안전대 미기재 등 22개 모순 탐지</td>
+          </tr>
+          <tr>
+            <td class="cause">5. 안전 불감증</td>
+            <td class="feature">행동 패턴 분석</td>
+            <td class="how">항상 체크, 복사-붙여넣기, 급히 작성 패턴 감지</td>
+          </tr>
+          <tr>
+            <td class="cause">6. 규정 이탈</td>
+            <td class="feature">교차 문서 분석</td>
+            <td class="how">30일간 타임라인 공백, 문서간 모순 탐지</td>
+          </tr>
+          <tr>
+            <td class="cause">7. 안전관리계획 부재</td>
+            <td class="feature">마스터플랜 검증</td>
+            <td class="how">일일 보고서가 현장별 규정을 준수하는지 확인</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="mapping-source">근본 원인 출처: Hwang et al., Buildings 2023 / MDPI Systematic Review 2025</p>
+    </div>
+
+    <!-- ============ SLIDE 10: Demo ============ -->
     <div class="slide slide-demo">
       <div class="eyebrow">라이브 데모</div>
       <h2>직접 보여드리겠습니다</h2>
@@ -828,7 +1038,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 9: Can / Can't ============ -->
+    <!-- ============ SLIDE 11: Can / Can't ============ -->
     <div class="slide slide-cancant">
       <h2>할 수 있는 것과 <span class="dim">할 수 없는 것</span></h2>
 
@@ -897,7 +1107,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 10: Challenges ============ -->
+    <!-- ============ SLIDE 12: Challenges ============ -->
     <div class="slide slide-challenges">
       <div class="eyebrow">도전 과제</div>
       <h2>우리가 마주한 <span class="hl">현실적인 어려움</span></h2>
@@ -921,7 +1131,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 11: Closing ============ -->
+    <!-- ============ SLIDE 13: Closing ============ -->
     <div class="slide slide-closing">
       <h2>사고는 서류에서<br><span class="hl">예방됩니다</span></h2>
 
@@ -947,7 +1157,7 @@
   </div>
 
   <div class="counter">
-    <span id="current">1</span> / <span id="total">10</span>
+    <span id="current">1</span> / <span id="total">12</span>
   </div>
 
   <div class="nav-hint">
