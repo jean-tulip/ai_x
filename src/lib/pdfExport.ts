@@ -13,6 +13,11 @@ interface ExportData {
         title: string;
         message: string;
         ruleId?: string;
+        rootCause?: {
+            id: string;
+            nameKo: string;
+            nameEn: string;
+        } | null;
     }>;
     summary: {
         totalIssues: number;
@@ -482,6 +487,46 @@ export async function exportReportToPDF(data: ExportData) {
 
                 .tbm-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;}
                 .tbm-text{white-space:pre-wrap;color:#0f172a;font-size:13px;line-height:1.7;}
+
+                /* Root Cause Summary */
+                .root-cause-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                    margin-top: 15px;
+                }
+                .root-cause-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 15px;
+                    background: #f8fafc;
+                    border-radius: 8px;
+                    border: 1px solid #e2e8f0;
+                }
+                .root-cause-label {
+                    font-weight: 600;
+                    color: #475569;
+                    font-size: 13px;
+                }
+                .root-cause-count {
+                    font-weight: 700;
+                    color: #6b21a8;
+                    font-size: 16px;
+                    background: #f3e8ff;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                }
+                .root-cause-badge {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 10px;
+                    font-weight: 600;
+                    background: #f3e8ff;
+                    color: #6b21a8;
+                    margin-left: 8px;
+                }
             </style>
         </head>
         <body>
@@ -650,6 +695,43 @@ export async function exportReportToPDF(data: ExportData) {
                 </div>
             </div>
 
+            ${(() => {
+                // Calculate root cause summary
+                const rootCauseCounts: Record<string, { nameKo: string; nameEn: string; count: number }> = {};
+                for (const issue of data.issues) {
+                    if (issue.rootCause) {
+                        if (!rootCauseCounts[issue.rootCause.id]) {
+                            rootCauseCounts[issue.rootCause.id] = {
+                                nameKo: issue.rootCause.nameKo,
+                                nameEn: issue.rootCause.nameEn,
+                                count: 0
+                            };
+                        }
+                        rootCauseCounts[issue.rootCause.id].count++;
+                    }
+                }
+                const rootCauseEntries = Object.entries(rootCauseCounts).sort((a, b) => b[1].count - a[1].count);
+
+                if (rootCauseEntries.length === 0) return '';
+
+                return `
+            <div class="section">
+                <div class="section-title">근본 원인 분석 (연구 기반)</div>
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">
+                    Kim & Chi (2020), Hwang et al. (2023) 연구에 기반한 건설 안전사고 근본 원인 분류
+                </p>
+                <div class="root-cause-grid">
+                    ${rootCauseEntries.map(([id, rc]) => `
+                        <div class="root-cause-item">
+                            <span class="root-cause-label">${escapeHtml(rc.nameKo)} <span style="font-size:10px;color:#94a3b8;">(${escapeHtml(rc.nameEn)})</span></span>
+                            <span class="root-cause-count">${rc.count}건</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+                `;
+            })()}
+
             <div class="section">
                 <div class="section-title">발견된 문제점</div>
                 ${data.issues.length === 0 ? `
@@ -678,7 +760,10 @@ export async function exportReportToPDF(data: ExportData) {
                                                 </span>
                                             </td>
                                             <td>
-                                                <div class="issue-title">${escapeHtml(issue.title)}</div>
+                                                <div class="issue-title">
+                                                    ${escapeHtml(issue.title)}
+                                                    ${issue.rootCause ? `<span class="root-cause-badge">${escapeHtml(issue.rootCause.nameKo)}</span>` : ''}
+                                                </div>
                                                 <div class="issue-message">${escapeHtml(issue.message)}</div>
                                             </td>
                                         </tr>

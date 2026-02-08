@@ -74,6 +74,11 @@ interface Issue {
     confidence?: number; // Stage 4
     score?: number; // Stage 4
     isAIFixable?: boolean; // Whether AI can suggest a fix (false for photos, signatures)
+    rootCause?: {  // Research-backed root cause classification
+        id: string;
+        nameKo: string;
+        nameEn: string;
+    } | null;
 }
 
 interface RiskFactor {
@@ -207,6 +212,7 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                 title: i.title,
                 message: i.message,
                 ruleId: i.ruleId,
+                rootCause: i.rootCause || null,
             })),
         };
 
@@ -403,6 +409,7 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                 title: i.title,
                 message: i.message,
                 ruleId: i.ruleId,
+                rootCause: i.rootCause || null,
             })),
             summary: {
                 totalIssues: issues.length,
@@ -922,10 +929,15 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
 
                                                     {/* Content */}
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-1">
+                                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                             <h4 className={`font-bold text-sm ${severityColor(issue.severity, issue.ruleId)}`}>
                                                                 {issue.title}
                                                             </h4>
+                                                            {issue.rootCause && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
+                                                                    {issue.rootCause.nameKo}
+                                                                </span>
+                                                            )}
                                                             {issue.confidence !== undefined && (
                                                                 <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                                                                     {issue.confidence}%
@@ -1005,11 +1017,18 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                                     <h3 className={`text-lg font-black ${severityColor(selectedIssue.severity, selectedIssue.ruleId)}`}>
                                         {selectedIssue.title}
                                     </h3>
-                                    {selectedIssue.confidence !== undefined && (
-                                        <p className="text-xs text-slate-400 mt-1">
-                                            신뢰도 {selectedIssue.confidence}%
-                                        </p>
-                                    )}
+                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                        {selectedIssue.rootCause && (
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-700" title={`연구 기반 근본 원인: ${selectedIssue.rootCause.nameEn}`}>
+                                                {selectedIssue.rootCause.nameKo}
+                                            </span>
+                                        )}
+                                        {selectedIssue.confidence !== undefined && (
+                                            <span className="text-xs text-slate-400">
+                                                신뢰도 {selectedIssue.confidence}%
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
