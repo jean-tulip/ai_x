@@ -15,6 +15,8 @@ interface TBMRecord {
   tbmParticipants: string | null;
   tbmDuration: number | null;
   tbmCompletenessJson?: string | null;
+  // Brief #3: Engagement quality scoring
+  tbmEngagementJson?: string | null;
 }
 
 interface CompletenessScore {
@@ -31,6 +33,21 @@ interface CompletenessScore {
   };
   missingTopics?: string[];
   suggestions?: string[];
+}
+
+// Brief #3: Engagement quality scoring interface
+interface EngagementScore {
+  score: number;
+  level: "high" | "medium" | "low";
+  levelKo: string;
+  factors: Array<{
+    name: string;
+    nameKo: string;
+    detected: boolean;
+    impact: number;
+    evidence?: string;
+  }>;
+  suggestions: string[];
 }
 
 interface TBMTimelineProps {
@@ -131,6 +148,42 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
         return "미흡";
       default:
         return level;
+    }
+  };
+
+  // Brief #3: Engagement score parsing and helpers
+  const parseEngagement = (json: string | null | undefined): EngagementScore | null => {
+    if (!json) return null;
+    try {
+      return JSON.parse(json) as EngagementScore;
+    } catch {
+      return null;
+    }
+  };
+
+  const getEngagementColor = (level: string) => {
+    switch (level) {
+      case "high":
+        return "bg-green-100 text-green-800 border-green-300";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-300";
+      case "low":
+        return "bg-red-100 text-red-800 border-red-300";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-300";
+    }
+  };
+
+  const getEngagementBgColor = (level: string) => {
+    switch (level) {
+      case "high":
+        return "bg-green-50 border-green-200";
+      case "medium":
+        return "bg-yellow-50 border-yellow-200";
+      case "low":
+        return "bg-red-50 border-red-200";
+      default:
+        return "bg-gray-50 border-gray-200";
     }
   };
 
@@ -255,6 +308,7 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
             const participants = parseJsonField(record.tbmParticipants);
             const isExpanded = expandedId === record.id;
             const completeness = parseCompleteness(record.tbmCompletenessJson);
+            const engagement = parseEngagement(record.tbmEngagementJson);
 
             return (
               <div
@@ -276,6 +330,12 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
                         {completeness && (
                           <span className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${getCompletenessColor(completeness.level)}`}>
                             {completeness.score}점 ({getCompletenessLevelKo(completeness.level)})
+                          </span>
+                        )}
+                        {/* Brief #3: Engagement Badge */}
+                        {engagement && (
+                          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${getEngagementColor(engagement.level)}`}>
+                            참여도 {engagement.score}점
                           </span>
                         )}
                       </div>
@@ -410,6 +470,50 @@ export default function TBMTimeline({ tbmRecords, loading, onSelectTBM, onRefres
                               {completeness.suggestions.map((suggestion, idx) => (
                                 <li key={idx} className="flex items-start gap-1">
                                   <span className="text-amber-500">•</span>
+                                  <span>{suggestion}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Brief #3: Engagement Quality Analysis */}
+                    {engagement && (
+                      <div className={`mb-4 p-3 border rounded-lg ${getEngagementBgColor(engagement.level)}`}>
+                        <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1">
+                          <span>💬</span> 참여도 분석
+                          <span className={`ml-2 px-2 py-0.5 text-xs rounded-full border ${getEngagementColor(engagement.level)}`}>
+                            {engagement.score}점 ({engagement.levelKo})
+                          </span>
+                        </h4>
+
+                        {/* Factor breakdown */}
+                        <div className="mb-3 space-y-1.5">
+                          {engagement.factors.map((factor, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-xs">
+                              <span className="text-gray-700 flex items-center gap-1">
+                                <span className={factor.detected ? "text-green-500" : "text-gray-400"}>
+                                  {factor.detected ? "✓" : "✗"}
+                                </span>
+                                {factor.nameKo}
+                              </span>
+                              <span className={factor.detected ? "text-green-600 font-medium" : "text-gray-400"}>
+                                {factor.detected && factor.evidence ? factor.evidence : (factor.detected ? `+${factor.impact}` : `${factor.impact}`)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Suggestions */}
+                        {engagement.suggestions && engagement.suggestions.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-700 mb-1">개선 제안:</p>
+                            <ul className="text-xs text-gray-600 space-y-1">
+                              {engagement.suggestions.map((suggestion, idx) => (
+                                <li key={idx} className="flex items-start gap-1">
+                                  <span className="text-blue-500">💡</span>
                                   <span>{suggestion}</span>
                                 </li>
                               ))}

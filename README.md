@@ -36,6 +36,11 @@
   - 2 Completeness Checks (e.g., missing helmet checks)
 - **Korean Safety Law References**: Every violation cites specific regulations (산업안전보건법, KOSHA GUIDE)
 - **Actionable Guidance**: Each issue includes recommended actions
+- **Research-Based Root Cause Tagging** ⭐ NEW
+  - Links each validation issue to research-identified root causes (RC01-RC07)
+  - Based on Kim & Chi (2020) and Hwang et al. (2023) Korean construction safety research
+  - Categories: 교육 부족, 보호구 미제공, 안전조치 미이행, 불안전한 상태, 안전 불감증, 절차 이탈, 안전계획 부재
+  - Enables evidence-based analysis and cross-source synthesis
 
 #### **Stage 3: Cross-Document Consistency** ⭐ NEW - 3 Parallel Systems
 1. **Structured Master Safety Plan Validation**
@@ -48,6 +53,11 @@
    - Factors: High-risk work types, safety violations, signatures, checklist quality
    - Detects mismatch between calculated and documented risk levels
    - Example: Calculated=High (55 pts) vs Documented=Low → Flags inconsistency
+   - **Fall Hazard Priority System** ⭐ NEW
+     - Based on research showing 71% of fatal construction accidents are falls
+     - Automatic height work detection using Korean/English keywords (비계, 고소작업, scaffold, etc.)
+     - Escalates fall-related issues to "error" severity when height work detected
+     - Cross-source detection: TBM mentions + document content + photo analysis
 
 3. **Cross-Document Analysis**
    - Timeline gap detection (flags 5+ day inspection gaps)
@@ -74,7 +84,7 @@
 
 ---
 
-### 🎤 TBM (Toolbox Meeting) Recording & Analysis ⭐ NEW
+### 🎤 TBM (Toolbox Meeting) Recording & Analysis ⭐ Enhanced
 
 #### **Audio Recording & Transcription**
 - Record safety meetings directly in the app
@@ -88,10 +98,24 @@
 - **Scoring levels**: 우수 (85-100), 적정 (60-84), 미흡 (0-59)
 - Missing topics and improvement suggestions displayed
 
+#### **Engagement Quality Scoring** ⭐ NEW
+- **Research-backed analysis** based on PMC study showing participatory TBMs are more effective
+- **5 engagement factors analyzed**:
+  - Questions asked (indicates discussion vs lecture)
+  - Multiple speakers detected (turn-taking patterns)
+  - Worker participation markers (acknowledgments, responses)
+  - Adequate meeting duration (word count analysis)
+  - Personalized address (name mentions for engagement)
+- **Scoring levels**: 높음/참여형 (75+), 보통 (50-74), 낮음/일방적 전달 (0-49)
+- Generates improvement suggestions for low-engagement TBMs
+- Displayed in TBM timeline with color-coded badges
+- Included in PDF export with factor breakdown
+
 #### **AI-Powered TBM Cross-Validation**
 - Validates checklist against TBM discussion
 - Detects hazards mentioned in TBM but unchecked in documents
 - Claude Sonnet 4.5 with GPT-5.1 fallback for semantic matching
+- **Fall hazard priority**: Automatically escalates severity when height work detected in TBM
 - Example: TBM mentions "fire hazard" but 소화기 marked ✖ → Warning
 
 ---
@@ -278,7 +302,10 @@ src/lib/
 ├── validationConfig.ts         # Configurable thresholds
 ├── chatTools.ts                # MCP-style chat tools
 ├── pdfExport.ts                # Comprehensive PDF export
-└── masterPlanSchema.ts         # Structured plan schema
+├── masterPlanSchema.ts         # Structured plan schema
+├── rootCauseMapping.ts         # Research-based root cause classification (NEW)
+├── fallHazardPriority.ts       # Fall hazard detection & escalation (NEW)
+└── tbmEngagementScoring.ts     # TBM engagement quality analysis (NEW)
 ```
 
 ### Database
@@ -387,19 +414,25 @@ git merge upstream/main
 
 ### Rule Coverage
 - **Stage 1**: 5 format checks
-- **Stage 2**: 22 logic rules (4 categories)
+- **Stage 2**: 22 logic rules (4 categories) + root cause tagging
 - **Stage 3a**: 8 structured validation functions
-- **Stage 3b**: 4-factor risk assessment
+- **Stage 3b**: 4-factor risk assessment + fall hazard priority
 - **Stage 3c**: 3 cross-document analyses
 - **Stage 3d**: TBM + Photo cross-validation (AI-powered)
 - **Stage 4**: 5 pattern detection algorithms
 - **Stage 5**: Contextual safety review (6 concern categories)
+- **TBM**: 7 completeness criteria + 5 engagement factors
 
-**Total**: 50+ validation rules across 5 stages
+**Total**: 55+ validation rules across 5 stages
+
+### Research Integration
+- **Root Causes**: 7 research-identified categories (RC01-RC07)
+- **Fall Priority**: Based on 71% fatal accident statistic
+- **Engagement Scoring**: Based on PMC participatory training research
 
 ### Code Metrics
-- **Total Lines**: ~3,500 lines (validation engine + TBM + PDF export)
-- **Modules**: 12 major validation files
+- **Total Lines**: ~4,000 lines (validation engine + TBM + PDF export)
+- **Modules**: 15 major validation files
 - **Test Coverage**: Synthetic data available for all stages
 
 ---
@@ -416,6 +449,9 @@ git merge upstream/main
 8. **Intelligent Chat** - MCP-style tools for querying document data and TBM context
 9. **Production Ready** - 100% complete, fully functional system
 10. **Bilingual Support** - Korean primary with English translations
+11. **Research-Based Root Causes** ⭐ NEW - Links issues to academic research (Kim & Chi 2020, Hwang et al. 2023)
+12. **Fall Hazard Priority** ⭐ NEW - Automatic escalation based on 71% fatal accident research
+13. **TBM Engagement Scoring** ⭐ NEW - Detects one-way lectures vs participatory meetings
 
 ---
 

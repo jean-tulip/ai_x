@@ -9,6 +9,7 @@
 
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
+import { detectHeightWork } from "./fallHazardPriority";
 
 export interface TBMContext {
   workType: string | null;
@@ -21,6 +22,20 @@ export interface TBMContext {
     level: string;
     missingTopics?: string[];
     suggestions?: string[];
+  };
+  // Brief #3: Engagement quality scoring
+  engagementScore?: {
+    score: number;
+    level: "high" | "medium" | "low";
+    levelKo: string;
+    factors: Array<{
+      name: string;
+      nameKo: string;
+      detected: boolean;
+      impact: number;
+      evidence?: string;
+    }>;
+    suggestions: string[];
   };
 }
 
@@ -88,7 +103,11 @@ function buildTBMCrossValidationPrompt(input: TBMAICrossValidationInput): string
     return `- ${name}: ${value}`;
   }).join("\n") || "체크리스트 없음";
 
-  return `
+  // [Brief #2] Detect height work in TBM content for fall hazard prioritization
+  const tbmText = (tbmContext.summary || "") + " " + (tbmContext.extractedHazards?.join(" ") || "") + " " + (tbmContext.workType || "");
+  const heightInTBM = detectHeightWork(tbmText, "tbm");
+
+  let prompt = `
 너는 산업 안전 문서 검증 전문가다. TBM(작업 전 안전 회의)에서 논의된 내용과 안전 점검표의 일관성을 분석하라.
 
 ## TBM 정보
@@ -132,8 +151,23 @@ ${checklistStr}
 주의:
 - 비판단적 어조 사용 ("위험하다" 대신 "불일치가 존재함")
 - 확인된 사실만 언급, 추측은 "추정" 표시
-- inconsistencies가 없으면 빈 배열 반환
-`.trim();
+- inconsistencies가 없으면 빈 배열 반환`;
+
+  // [Brief #2] Add fall hazard priority instructions when height work is detected
+  if (heightInTBM.detected) {
+    prompt += `
+
+[추락 위험 우선순위 - 중요]
+TBM에서 고소작업 관련 내용이 감지되었습니다 (키워드: ${heightInTBM.indicators.join(", ")}).
+연구에 따르면 추락사고는 건설업 사망사고의 71%를 차지합니다.
+다음 항목을 반드시 확인하고, 미흡 시 severity를 "error"로 설정하세요:
+- 안전대/안전벨트 착용 논의 여부
+- 추락방호장치 설치 확인 여부
+- 비계/발판 안전 점검 언급 여부
+- 개구부/단부 방호 조치 논의 여부`;
+  }
+
+  return prompt.trim();
 }
 
 /**

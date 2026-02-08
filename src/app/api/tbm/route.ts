@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/db";
+import { analyzeEngagement, getEngagementLevelKo } from "@/lib/tbmEngagementScoring";
 
 function getOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -149,6 +150,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "전사 결과가 비어있습니다." }, { status: 500 });
     }
 
+    // 2a) Analyze engagement quality (Brief #3)
+    console.log("[TBM] step=engagement analysis start");
+    const engagementScore = analyzeEngagement(transcript);
+    console.log("[TBM] step=engagement analysis done, score:", engagementScore.score, "level:", engagementScore.level);
+
     // 2) Load project context if projectId provided
     let contextInfo = "";
     if (projectId) {
@@ -261,6 +267,14 @@ export async function POST(req: Request) {
       extractedInspector: parsed?.extractedInspector || null,
       participants: parsed?.participants || [],
       completenessScore: parsed?.completenessScore || null,
+      // Brief #3: Engagement quality scoring
+      engagementScore: {
+        score: engagementScore.score,
+        level: engagementScore.level,
+        levelKo: getEngagementLevelKo(engagementScore.level),
+        factors: engagementScore.factors,
+        suggestions: engagementScore.suggestions,
+      },
     });
   } catch (e: any) {
     console.error("/api/tbm error raw:", e);

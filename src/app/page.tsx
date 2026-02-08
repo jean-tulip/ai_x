@@ -48,6 +48,14 @@ type Report = {
   tbmExtractedHazards?: string | null;   // JSON array of hazards
   tbmExtractedInspector?: string | null; // 담당자 이름
   tbmParticipants?: string | null;       // JSON array of participants
+
+  // [Brief #2] Fall hazard detection status
+  fallHazardStatus?: {
+    detected: boolean;
+    confidence: "high" | "medium" | "low";
+    indicators: string[];
+    source: string;
+  } | null;
 };
 
 interface ModalDialogProps {
@@ -1154,6 +1162,8 @@ export default function Page() {
           extractedInspector: r?.extractedInspector ?? null,
           participants: JSON.stringify(r?.participants ?? []),
           completenessScore: r?.completenessScore ?? null,
+          // Brief #3: Engagement quality scoring
+          engagementScore: r?.engagementScore ?? null,
         }),
       });
       if (!resp.ok) {
@@ -2147,6 +2157,7 @@ export default function Page() {
                         } : null,
                         photoFindings: latestPhotoFindings || null,
                       } : null}
+                      fallHazardStatus={report?.fallHazardStatus}
                     />
                   }
                 />

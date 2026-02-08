@@ -1067,7 +1067,7 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                                         {selectedIssue.rootCause && (
-                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-700" title={`연구 기반 근본 원인: ${selectedIssue.rootCause.nameEn}`}>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-700" title={`연구 기반 근본 원인: ${selectedIssue.rootCause.nameEn}`}>
                                                 {selectedIssue.rootCause.nameKo}
                                             </span>
                                         )}

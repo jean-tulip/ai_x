@@ -131,6 +131,10 @@ export const RULE_TO_ROOT_CAUSE: Record<string, RootCauseId> = {
   "tbm_cross_inspector_mismatch": "RC03",
   "tbm_cross_work_type_mismatch": "RC03",
 
+  // Brief #3: TBM Engagement Quality issues
+  "tbm_engagement_low": "RC01",         // Low engagement = training/facilitation issue
+  "tbm_engagement_medium": "RC01",      // Medium engagement = training improvement needed
+
   // Cross-document issues
   "cross_doc_inconsistency": "RC03",    // Inconsistent across docs = enforcement
   "cross_doc_timeline_gap": "RC06",     // Timeline gaps = deviation

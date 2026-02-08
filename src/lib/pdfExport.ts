@@ -8,6 +8,20 @@ interface ExportData {
     createdAt: Date;
     tbmSummary?: string;
     tbmTranscript?: string;
+    // Brief #3: Engagement quality scoring
+    engagementScore?: {
+        score: number;
+        level: "high" | "medium" | "low";
+        levelKo: string;
+        factors: Array<{
+            name: string;
+            nameKo: string;
+            detected: boolean;
+            impact: number;
+            evidence?: string;
+        }>;
+        suggestions: string[];
+    };
     issues: Array<{
         severity: string;
         title: string;
@@ -122,6 +136,15 @@ export async function exportReportToPDF(data: ExportData) {
     // Log first few issues to verify they're being passed
     if (data.issues.length > 0) {
         console.log('[PDF Export] Sample issues:', data.issues.slice(0, 3));
+        // Log root cause data specifically
+        const issuesWithRootCause = data.issues.filter(i => i.rootCause);
+        console.log('[PDF Export] Issues with rootCause:', issuesWithRootCause.length, 'of', data.issues.length);
+        if (issuesWithRootCause.length > 0) {
+            console.log('[PDF Export] Root causes found:', issuesWithRootCause.map(i => ({ ruleId: i.ruleId, rootCause: i.rootCause })));
+        } else {
+            console.log('[PDF Export] WARNING: No issues have rootCause attached! Check if ruleIds match RULE_TO_ROOT_CAUSE mapping.');
+            console.log('[PDF Export] Issue ruleIds:', data.issues.map(i => i.ruleId));
+        }
     }
 
     // DIAGNOSTIC CHECK 2: Validate data
@@ -511,9 +534,9 @@ export async function exportReportToPDF(data: ExportData) {
                 }
                 .root-cause-count {
                     font-weight: 700;
-                    color: #6b21a8;
+                    color: #0d9488;
                     font-size: 16px;
-                    background: #f3e8ff;
+                    background: #ccfbf1;
                     padding: 4px 12px;
                     border-radius: 12px;
                 }
@@ -523,8 +546,8 @@ export async function exportReportToPDF(data: ExportData) {
                     border-radius: 4px;
                     font-size: 10px;
                     font-weight: 600;
-                    background: #f3e8ff;
-                    color: #6b21a8;
+                    background: #ccfbf1;
+                    color: #115e59;
                     margin-left: 8px;
                 }
             </style>
@@ -807,6 +830,40 @@ export async function exportReportToPDF(data: ExportData) {
                 <div class="section-title">TBM 요약</div>
                 <div class="tbm-box">
                     <div class="tbm-text">${escapeHtml(tbmSummary)}</div>
+                </div>
+            </div>
+            ` : ''}
+
+            ${data.engagementScore ? `
+            <div class="section">
+                <div class="section-title">TBM 참여도 분석</div>
+                <div style="background:${data.engagementScore.level === 'high' ? '#dcfce7' : data.engagementScore.level === 'medium' ? '#fef9c3' : '#fee2e2'};border:1px solid ${data.engagementScore.level === 'high' ? '#86efac' : data.engagementScore.level === 'medium' ? '#fde047' : '#fca5a5'};border-radius:8px;padding:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <span style="font-weight:700;font-size:15px;">참여도 점수</span>
+                        <span style="font-size:20px;font-weight:700;color:${data.engagementScore.level === 'high' ? '#16a34a' : data.engagementScore.level === 'medium' ? '#ca8a04' : '#dc2626'};">
+                            ${data.engagementScore.score}점 (${data.engagementScore.levelKo})
+                        </span>
+                    </div>
+                    <div style="display:grid;gap:6px;margin-bottom:12px;">
+                        ${data.engagementScore.factors.map(f => `
+                            <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 8px;background:${f.detected ? '#f0fdf4' : '#fafafa'};border-radius:4px;">
+                                <span style="color:${f.detected ? '#15803d' : '#9ca3af'};">
+                                    ${f.detected ? '✓' : '✗'} ${escapeHtml(f.nameKo)}
+                                </span>
+                                <span style="color:${f.detected ? '#16a34a' : '#9ca3af'};">
+                                    ${f.detected && f.evidence ? escapeHtml(f.evidence) : (f.detected ? `+${f.impact}` : `${f.impact}`)}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${data.engagementScore.suggestions.length > 0 ? `
+                        <div style="border-top:1px solid ${data.engagementScore.level === 'high' ? '#86efac' : data.engagementScore.level === 'medium' ? '#fde047' : '#fca5a5'};padding-top:10px;">
+                            <div style="font-weight:600;font-size:12px;margin-bottom:6px;">개선 제안:</div>
+                            <ul style="margin:0;padding-left:16px;font-size:11px;color:#374151;">
+                                ${data.engagementScore.suggestions.map(s => `<li style="margin-bottom:4px;">${escapeHtml(s)}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
             ` : ''}
