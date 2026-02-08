@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/setup-db.mjs && prisma db push && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "node scripts/setup-db.mjs && prisma generate && node scripts/copy-pdf-worker.mjs",
