@@ -115,6 +115,121 @@ function escapeHtml(unsafe: string | undefined | null): string {
     .replace(/'/g, "&#039;");
 }
 
+/**
+ * Simple markdown to HTML converter for PDF narratives
+ * Handles: headers, bold, italic, lists, tables, horizontal rules
+ */
+function markdownToHtml(markdown: string | undefined | null): string {
+  if (!markdown) return "";
+
+  let html = escapeHtml(markdown);
+
+  // Headers
+  html = html.replace(/^### (.+)$/gm, '<h4 style="font-size:13px;font-weight:700;margin:14px 0 6px 0;color:#1e293b;">$1</h4>');
+  html = html.replace(/^## (.+)$/gm, '<h3 style="font-size:15px;font-weight:700;margin:18px 0 8px 0;color:#0f172a;">$1</h3>');
+
+  // Bold and italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Process lines
+  const lines = html.split('\n');
+  const result: string[] = [];
+  let inList = false;
+  let listType: 'ul' | 'ol' | null = null;
+  let i = 0;
+
+  // Helper to parse table
+  function parseTable(startIdx: number): { html: string; endIdx: number } {
+    const rows: string[][] = [];
+    let idx = startIdx;
+    let hasHeader = false;
+
+    while (idx < lines.length) {
+      const line = lines[idx].trim();
+      if (!line.startsWith('|') || !line.endsWith('|')) break;
+      if (line.match(/^\|[\s-:]+\|$/)) { hasHeader = rows.length > 0; idx++; continue; }
+      rows.push(line.slice(1, -1).split('|').map(c => c.trim()));
+      idx++;
+    }
+
+    if (rows.length === 0) return { html: '', endIdx: startIdx };
+
+    let tbl = '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;">';
+    rows.forEach((row, rowIdx) => {
+      const isHead = hasHeader && rowIdx === 0;
+      const tag = isHead ? 'th' : 'td';
+      const style = isHead
+        ? 'style="background:#f1f5f9;padding:6px 10px;text-align:left;font-weight:600;border:1px solid #e2e8f0;"'
+        : 'style="padding:6px 10px;border:1px solid #e2e8f0;"';
+      tbl += '<tr>' + row.map(c => `<${tag} ${style}>${c}</${tag}>`).join('') + '</tr>';
+    });
+    tbl += '</table>';
+    return { html: tbl, endIdx: idx };
+  }
+
+  while (i < lines.length) {
+    const trimmed = lines[i].trim();
+
+    // Horizontal rule
+    if (trimmed.match(/^-{3,}$/) || trimmed.match(/^\*{3,}$/) || trimmed.match(/^_{3,}$/)) {
+      if (inList) { result.push(listType === 'ol' ? '</ol>' : '</ul>'); inList = false; }
+      result.push('<hr style="border:none;border-top:1px solid #e2e8f0;margin:14px 0;">');
+      i++; continue;
+    }
+
+    // Table
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      if (inList) { result.push(listType === 'ol' ? '</ol>' : '</ul>'); inList = false; }
+      const { html: tblHtml, endIdx } = parseTable(i);
+      if (tblHtml) { result.push(tblHtml); i = endIdx; continue; }
+    }
+
+    // Bullet
+    if (trimmed.match(/^[-•] /)) {
+      if (!inList || listType !== 'ul') {
+        if (inList) result.push(listType === 'ol' ? '</ol>' : '</ul>');
+        result.push('<ul style="margin:8px 0;padding-left:18px;">');
+        inList = true; listType = 'ul';
+      }
+      result.push(`<li style="margin:5px 0;line-height:1.5;">${trimmed.replace(/^[-•] /, '')}</li>`);
+      i++; continue;
+    }
+
+    // Numbered
+    if (trimmed.match(/^\d+\. /)) {
+      if (!inList || listType !== 'ol') {
+        if (inList) result.push(listType === 'ol' ? '</ol>' : '</ul>');
+        result.push('<ol style="margin:8px 0;padding-left:18px;">');
+        inList = true; listType = 'ol';
+      }
+      result.push(`<li style="margin:5px 0;line-height:1.5;">${trimmed.replace(/^\d+\. /, '')}</li>`);
+      i++; continue;
+    }
+
+    // Headers (already processed)
+    if (trimmed.startsWith('<h3') || trimmed.startsWith('<h4')) {
+      if (inList) { result.push(listType === 'ol' ? '</ol>' : '</ul>'); inList = false; }
+      result.push(trimmed);
+      i++; continue;
+    }
+
+    // Empty line
+    if (trimmed === '') {
+      if (inList) { result.push(listType === 'ol' ? '</ol>' : '</ul>'); inList = false; }
+      i++; continue;
+    }
+
+    // Regular text
+    if (inList) { result.push(listType === 'ol' ? '</ol>' : '</ul>'); inList = false; }
+    result.push(`<p style="margin:6px 0;line-height:1.6;">${trimmed}</p>`);
+    i++;
+  }
+
+  if (inList) result.push(listType === 'ol' ? '</ol>' : '</ul>');
+  return result.join('');
+}
+
 function buildHTMLContent(data: ExportData): string {
   const createdAt = new Date(data.createdAt);
   const issues = Array.isArray(data.issues) ? data.issues : [];
@@ -463,9 +578,21 @@ function buildHTMLContent(data: ExportData): string {
     }
     .narrative-text {
       font-size: 13px;
-      line-height: 1.9;
+      line-height: 1.7;
       color: #334155;
-      white-space: pre-wrap;
+    }
+    .narrative-text p {
+      margin: 5px 0;
+    }
+    .narrative-text ul, .narrative-text ol {
+      margin: 6px 0;
+      padding-left: 18px;
+    }
+    .narrative-text li {
+      margin: 3px 0;
+    }
+    .narrative-text h3, .narrative-text h4 {
+      color: #1e293b;
     }
 
     .root-cause-box {
@@ -564,12 +691,12 @@ function buildHTMLContent(data: ExportData): string {
   ${hasSynthesis ? `
   <div class="narrative-section${data.summary.criticalCount > 0 ? " critical" : ""}">
     <h3>📋 종합 분석 결과</h3>
-    <div class="narrative-text">${escapeHtml(data.synthesisNarrative)}</div>
+    <div class="narrative-text">${markdownToHtml(data.synthesisNarrative)}</div>
   </div>
   ` : `
   <div class="narrative-section">
     <h3>📋 검증 요약</h3>
-    <div class="narrative-text">${escapeHtml(data.aiSummary) || "AI 분석 결과가 없습니다. 채팅에서 종합 분석을 요청하세요."}</div>
+    <div class="narrative-text">${markdownToHtml(data.aiSummary) || "AI 분석 결과가 없습니다. 채팅에서 종합 분석을 요청하세요."}</div>
   </div>
   `}
 
@@ -589,7 +716,7 @@ function buildHTMLContent(data: ExportData): string {
   ${hasCorrectiveAction ? `
   <div class="corrective-section">
     <h3>📝 시정조치 요청</h3>
-    <div class="narrative-text">${escapeHtml(data.correctiveAction)}</div>
+    <div class="narrative-text">${markdownToHtml(data.correctiveAction)}</div>
   </div>
   ` : ""}
 
@@ -727,62 +854,6 @@ function buildHTMLContent(data: ExportData): string {
     </table>
   </div>
   ` : ""}
-
-  <div class="section">
-    <div class="section-title">검증 요약</div>
-    <div class="summary-grid">
-      <div class="summary-card">
-        <div class="summary-label">총 문제점</div>
-        <div class="summary-value">${data.summary.totalIssues}</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-label">심각한 문제</div>
-        <div class="summary-value" style="color:#ef4444;">${data.summary.criticalCount}</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-label">경고</div>
-        <div class="summary-value" style="color:#f97316;">${data.summary.warningCount}</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-label">정보</div>
-        <div class="summary-value" style="color:#3b82f6;">${data.summary.infoCount}</div>
-      </div>
-    </div>
-  </div>
-
-  ${(() => {
-    // Calculate root cause summary
-    const rootCauseCounts: Record<string, { nameKo: string; nameEn: string; count: number }> = {};
-    for (const issue of issues) {
-      if (issue.rootCause) {
-        if (!rootCauseCounts[issue.rootCause.id]) {
-          rootCauseCounts[issue.rootCause.id] = {
-            nameKo: issue.rootCause.nameKo,
-            nameEn: issue.rootCause.nameEn,
-            count: 0
-          };
-        }
-        rootCauseCounts[issue.rootCause.id].count++;
-      }
-    }
-    const rootCauseEntries = Object.entries(rootCauseCounts).sort((a, b) => b[1].count - a[1].count);
-
-    if (rootCauseEntries.length === 0) return '';
-
-    return `
-  <div class="section">
-    <div class="section-title">근본 원인 분류</div>
-    <div class="root-cause-grid">
-      ${rootCauseEntries.map(([id, rc]) => `
-        <div class="root-cause-item">
-          <span class="root-cause-label">${escapeHtml(rc.nameKo)}</span>
-          <span class="root-cause-count">${rc.count}건</span>
-        </div>
-      `).join('')}
-    </div>
-  </div>
-    `;
-  })()}
 
   <div class="section">
     <div class="section-title">발견된 문제점</div>

@@ -375,6 +375,9 @@ export default function Page() {
   const [hasUnviewedIssues, setHasUnviewedIssues] = useState(false); // Show indicator when analysis completes
     const [localChatMessages, setLocalChatMessages] = useState<{ role: "ai" | "user"; text: string }[]>([]); // Persist local chat
   const [chatExternalMessage, setChatExternalMessage] = useState<string | null>(null); // For corrective action injection
+  // [Brief #5] Lifted narrative state for PDF export - shared between desktop ChatPanel and mobile AnalysisPanel
+  const [synthesisNarrative, setSynthesisNarrative] = useState<string | null>(null);
+  const [correctiveAction, setCorrectiveAction] = useState<string | null>(null);
   const [forceAnalysisPanel, setForceAnalysisPanel] = useState<"analysis" | "issues" | null>(null); // Force switch to analysis tab
 
   // Document validation stages (5 stages)
@@ -1406,6 +1409,9 @@ export default function Page() {
           infoCount: issues.filter((i: any) => i.severity === "info").length,
         },
         projectId: currentProjectId,
+        // [Brief #5] Include captured narratives
+        synthesisNarrative: synthesisNarrative || undefined,
+        correctiveAction: correctiveAction || undefined,
       };
 
       const response = await fetch("/api/export-pdf", {
@@ -2060,6 +2066,11 @@ export default function Page() {
                         } : null}
                         externalMessage={chatExternalMessage}
                         onExternalMessageSent={() => setChatExternalMessage(null)}
+                        // [Brief #5] Lifted narrative state
+                        synthesisNarrative={synthesisNarrative}
+                        correctiveAction={correctiveAction}
+                        onSynthesisNarrativeChange={setSynthesisNarrative}
+                        onCorrectiveActionChange={setCorrectiveAction}
                       />
 
 
@@ -2160,6 +2171,11 @@ export default function Page() {
                         photoFindings: latestPhotoFindings || null,
                       } : null}
                       fallHazardStatus={report?.fallHazardStatus}
+                      // [Brief #5] Lifted narrative state
+                      synthesisNarrative={synthesisNarrative}
+                      correctiveAction={correctiveAction}
+                      onSynthesisNarrativeChange={setSynthesisNarrative}
+                      onCorrectiveActionChange={setCorrectiveAction}
                     />
                   }
                 />
