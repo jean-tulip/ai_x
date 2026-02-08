@@ -88,11 +88,20 @@ export const RULE_TO_ROOT_CAUSE: Record<string, RootCauseId> = {
   "rule_height_no_net": "RC02",         // No safety net = equipment not provided
   "rule_fire_extinguisher": "RC02",     // No fire extinguisher = equipment not provided
   "rule_confined_ventilation": "RC02",  // No ventilation = equipment not provided
+  "rule_confined_oxygen": "RC02",       // No oxygen measurement = equipment not provided
+  "rule_excavation_shoring": "RC02",    // No shoring = equipment not provided
+  "rule_excavation_ladder": "RC02",     // No escape ladder = equipment not provided
+  "rule_electrical_lockout": "RC03",    // No lockout = enforcement gap
+  "rule_height_protection": "RC02",     // No fall protection = equipment not provided
+  "rule_fire_spark_prevention": "RC03", // No spark prevention = enforcement gap
+  "rule_helmet_missing": "RC02",        // No helmet = equipment not provided
+  "rule_height_work_missing": "RC07",   // Height work not indicated = no plan
 
   // Logical contradictions → RC03 (enforcement gap between paper and practice)
-  "rule_fall_contradiction": "RC03",
-  "rule_fire_contradiction": "RC03",
-  "rule_confined_space_contradiction": "RC03",
+  // NOTE: These match the actual rule IDs from validator.ts
+  "rule_height_contradiction": "RC03",   // Height work contradiction
+  "rule_fire_contradiction": "RC03",     // Fire work contradiction
+  "rule_confined_contradiction": "RC03", // Confined space contradiction
   "rule_excavation_contradiction": "RC03",
   "rule_electrical_contradiction": "RC03",
 
@@ -117,6 +126,10 @@ export const RULE_TO_ROOT_CAUSE: Record<string, RootCauseId> = {
   "tbm_incomplete": "RC01",             // Incomplete TBM = training issue
   "tbm_missing_hazards": "RC01",        // Missing hazard discussion = training
   "tbm_mismatch": "RC03",               // TBM doesn't match document = enforcement
+  "tbm_cross_hazard_not_checked": "RC03", // Hazard mentioned but not checked
+  "tbm_cross_hazard_missing_item": "RC07", // Missing checklist item for hazard
+  "tbm_cross_inspector_mismatch": "RC03",
+  "tbm_cross_work_type_mismatch": "RC03",
 
   // Cross-document issues
   "cross_doc_inconsistency": "RC03",    // Inconsistent across docs = enforcement
@@ -125,6 +138,19 @@ export const RULE_TO_ROOT_CAUSE: Record<string, RootCauseId> = {
   // Risk matrix issues
   "risk_matrix_mismatch": "RC03",       // Risk level mismatch = enforcement
   "risk_matrix_critical_factors": "RC04", // High-risk factors = unsafe conditions
+
+  // Photo validation issues
+  "photo_ppe_mismatch": "RC03",         // PPE mismatch between doc and photo
+  "photo_equipment_mismatch": "RC02",   // Equipment missing in photo
+  "photo_environment_mismatch": "RC04", // Unsafe conditions in photo
+
+  // Contextual review issues
+  "contextual_weather_risk": "RC04",
+  "contextual_lone_worker": "RC07",
+  "contextual_missing_precaution": "RC03",
+  "contextual_environmental": "RC04",
+  "contextual_temporal": "RC04",
+  "contextual_regulatory_gap": "RC07",
 };
 
 /**
