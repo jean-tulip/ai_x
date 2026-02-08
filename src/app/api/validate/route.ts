@@ -17,6 +17,7 @@ import { validateAgainstTBM } from "@/lib/tbmCrossValidation";
 import { crossCheckPhotoVsDocument } from "@/lib/photoDocumentCrossCheck";
 import { runContextualSafetyReview } from "@/lib/contextualSafetyReview";
 import { getRootCause } from "@/lib/rootCauseMapping";
+import { detectHeightWork, FALL_RELATED_RULES, type HeightWorkDetection } from "@/lib/fallHazardPriority";
 import {
   VERIFICATION_TOOLS,
   shouldVerifyExtraction,
@@ -1112,7 +1113,7 @@ Respond with ONLY a JSON object:
 
     // Merge all issues: validation + structured + risk + pattern + cross-document + TBM + contextual analysis
     // Enrich each issue with research-backed root cause classification
-    const allIssues = [...validationIssues, ...mismatchIssues, ...structuredIssues, ...riskIssues, ...patternIssues, ...crossDocIssues, ...tbmIssues, ...contextualIssues].map(issue => {
+    let enrichedIssues = [...validationIssues, ...mismatchIssues, ...structuredIssues, ...riskIssues, ...patternIssues, ...crossDocIssues, ...tbmIssues, ...contextualIssues].map(issue => {
       const rc = getRootCause(issue.ruleId);
       return {
         ...issue,
@@ -1120,6 +1121,28 @@ Respond with ONLY a JSON object:
         rootCause: rc ? { id: rc.id, nameKo: rc.nameKo, nameEn: rc.nameEn } : null,
       };
     });
+
+    // [Brief #2] Fall Hazard Priority - Detect height work and escalate fall-related issues
+    const workContent = extracted.fields?.작업내용 || "";
+    const checklistText = extracted.checklist?.map((c: { nameKo?: string }) => c.nameKo || "").join(" ") || "";
+    const heightDetection = detectHeightWork(workContent + " " + checklistText, "document");
+
+    // If height work detected, escalate fall-related issues from "warn" to "error"
+    if (heightDetection.detected) {
+      console.log(`[Fall Priority] Height work detected (confidence: ${heightDetection.confidence}): ${heightDetection.indicators.join(", ")}`);
+      enrichedIssues = enrichedIssues.map(issue => {
+        if (issue.ruleId && FALL_RELATED_RULES.includes(issue.ruleId) && issue.severity === "warn") {
+          return {
+            ...issue,
+            severity: "error" as const,
+            message: issue.message + "\n⚠️ 고소작업 감지: 추락 관련 이슈 심각도 상향 (연구: 사망사고의 71%가 추락)",
+          };
+        }
+        return issue;
+      });
+    }
+
+    const allIssues = enrichedIssues;
     // --- DB SAVE ---
     // Save the result to the database for history (including Stage 4 fields)
     const extractedChat = Array.isArray((extracted as { chat?: unknown }).chat)
@@ -1165,7 +1188,14 @@ Respond with ONLY a JSON object:
     return NextResponse.json({
       fileName,
       ...finalResult,
-      reportId: savedReport.id
+      reportId: savedReport.id,
+      // [Brief #2] Fall hazard status for UI warning banner
+      fallHazardStatus: heightDetection.detected ? {
+        detected: true,
+        confidence: heightDetection.confidence,
+        indicators: heightDetection.indicators,
+        source: "document",
+      } : null,
     });
   } catch (e: any) {
     logger.error("Validation Error:", e);

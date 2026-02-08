@@ -34,8 +34,11 @@ export interface RiskFactor {
  */
 
 // 작업 유형별 기본 위험도
+// [Brief #2] Fall hazard weights increased based on Hwang et al. (2023):
+// "Scaffolding and working platforms" = #1 accident cause (AF=190, RF=0.725)
+// "Fall" = 71% of fatal accidents (AF=547, RF=0.710)
 const WORK_TYPE_BASE_RISK: Record<string, number> = {
-  fall_01: 25, // 고소작업 (추락 위험 - 매우 높음)
+  fall_01: 35, // 고소작업 (추락 위험 - 최고, 사망사고의 71%) [INCREASED from 25]
   conf_01: 30, // 밀폐공간작업 (질식 위험 - 최고)
   fire_01: 20, // 화기작업 (화재 위험 - 높음)
   exc_01: 15, // 굴착작업 (붕괴 위험 - 중간)
@@ -43,9 +46,10 @@ const WORK_TYPE_BASE_RISK: Record<string, number> = {
 };
 
 // 안전조치 미이행 시 추가 위험도
+// [Brief #2] Fall-related violations increased based on research findings
 const VIOLATION_RISK_INCREASE: Record<string, number> = {
-  ppe_03: 20, // 안전대 미착용 (추락 시 치명적)
-  fall_02: 15, // 추락방호장치 없음
+  ppe_03: 30, // 안전대 미착용 (추락 시 치명적) [INCREASED from 20 - critical for falls]
+  fall_02: 25, // 추락방호장치 없음 [INCREASED from 15]
   fire_02: 10, // 소화기 미비치
   conf_02: 25, // 산소농도 미측정 (질식 위험)
   conf_03: 15, // 환기 미조치

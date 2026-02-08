@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import type { ReportContext } from "@/lib/chatTools";
 import { aggregateRootCauses } from "@/lib/rootCauseMapping";
+import { detectHeightWork, aggregateFallStatus, type HeightWorkDetection } from "@/lib/fallHazardPriority";
 
 export const runtime = "nodejs";
 
@@ -197,6 +198,55 @@ function buildSystemPrompt(reportContext: ReportContext | null): string {
     systemPrompt += `\n- 예: 문서에서 "보호구 미제공(RC02)" 발견 → TBM에서 보호구 논의 누락 → 사진에서 보호구 미착용 = 세 자료 모두 RC02 확인`;
     systemPrompt += `\n- 근본 원인이 한 자료에서만 나타나면 "추가 확인 필요"로 표시`;
     systemPrompt += `\n- 시정조치 요청서 작성 시 근본 원인을 명시하여 재발 방지 조치 포함`;
+  }
+
+  // [Brief #2] Cross-source fall hazard detection and escalation
+  const heightDetections: HeightWorkDetection[] = [];
+
+  // Detect height work from document
+  if (extracted?.fields?.작업내용 || extracted?.checklist) {
+    const docText = (extracted.fields?.작업내용 || "") + " " +
+      (extracted.checklist?.map((c: { nameKo?: string }) => c.nameKo || "").join(" ") || "");
+    heightDetections.push(detectHeightWork(docText, "document"));
+  }
+
+  // Detect height work from TBM
+  if (reportContext?.tbmContext) {
+    const tbmText = (reportContext.tbmContext.summary || "") + " " +
+      (reportContext.tbmContext.extractedHazards?.join(" ") || "") + " " +
+      (reportContext.tbmContext.workType || "");
+    heightDetections.push(detectHeightWork(tbmText, "tbm"));
+  }
+
+  // Detect height work from photos
+  if (reportContext?.photoFindings) {
+    const photoText = reportContext.photoFindings.violations
+      ?.map((v: { violation?: string; evidence?: string }) => (v.violation || "") + " " + (v.evidence || "")).join(" ") || "";
+    heightDetections.push(detectHeightWork(photoText, "photo"));
+  }
+
+  const fallStatus = aggregateFallStatus(heightDetections);
+
+  // Inject fall hazard warning into synthesis prompt when height work detected
+  if (fallStatus.escalationRequired) {
+    systemPrompt += `\n\n[⚠️ 추락 위험 우선 경고 - 연구 기반]`;
+    systemPrompt += `\n${fallStatus.escalationReason}`;
+
+    systemPrompt += `\n\n추락 위험 종합 분석 시 반드시 확인:`;
+    systemPrompt += `\n[점검표] 안전대 착용(ppe_03), 추락방호(fall_01~03), 비계 안전 항목이 ✔인지 확인`;
+
+    if (reportContext?.tbmContext) {
+      systemPrompt += `\n[TBM] 추락 예방 관련 논의가 있었는지, 안전장비 착용 지시가 있었는지 확인`;
+    }
+
+    if (reportContext?.photoFindings) {
+      systemPrompt += `\n[사진] 안전대 착용 여부, 안전난간 설치 여부, 개구부 방호 여부를 사진 증거와 대조`;
+    }
+
+    systemPrompt += `\n\n특히 다음 불일치를 최우선으로 지적:`;
+    systemPrompt += `\n- TBM에서 "안전대 착용" 지시 → 사진에서 미착용 = 심각한 불일치`;
+    systemPrompt += `\n- 점검표에서 추락방호 ✔ → 사진에서 미설치 = 허위 기재 가능성`;
+    systemPrompt += `\n- TBM에서 추락 위험 미논의 + 고소작업 진행 = TBM 품질 미흡`;
   }
 
   // Three-way synthesis guide when all sources are available

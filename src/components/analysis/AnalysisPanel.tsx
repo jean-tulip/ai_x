@@ -103,6 +103,13 @@ interface ValidationStage {
     icon: string;
 }
 
+interface FallHazardStatus {
+    detected: boolean;
+    confidence: "high" | "medium" | "low";
+    indicators: string[];
+    source: string;
+}
+
 interface AnalysisPanelProps {
     loading: boolean;
     issues: Issue[];
@@ -128,9 +135,10 @@ interface AnalysisPanelProps {
     onLocalChatMessagesChange?: (messages: { role: "ai" | "user"; text: string }[]) => void; // Callback when chat messages change
     reportContext?: any; // Enriched context for chat (extractedData, projectContext, etc.)
     onSendChatMessage?: (message: string) => void; // Inject message into chat (for corrective action)
+    fallHazardStatus?: FallHazardStatus | null; // [Brief #2] Fall hazard detection status
 }
 
-export default function AnalysisPanel({ loading, issues, chatMessages, onReupload, onModify, currentProjectName, riskCalculation, currentFile, historicalFileName, tbmSummary, tbmTranscript, documentType, validationStep = 0, showProgress = false, validationSteps, initialHiddenIssueIds = [], onHiddenIssuesChange, hasUnviewedIssues = false, isAnimating = false, onMarkIssuesViewed, initialLocalChatMessages = [], onLocalChatMessagesChange, reportContext, onSendChatMessage }: AnalysisPanelProps) {
+export default function AnalysisPanel({ loading, issues, chatMessages, onReupload, onModify, currentProjectName, riskCalculation, currentFile, historicalFileName, tbmSummary, tbmTranscript, documentType, validationStep = 0, showProgress = false, validationSteps, initialHiddenIssueIds = [], onHiddenIssuesChange, hasUnviewedIssues = false, isAnimating = false, onMarkIssuesViewed, initialLocalChatMessages = [], onLocalChatMessagesChange, reportContext, onSendChatMessage, fallHazardStatus }: AnalysisPanelProps) {
     // Default to 5-stage document validation if not provided
     const defaultSteps: ValidationStage[] = [
         { id: "stage1", label: "형식 검증", icon: "description" },
@@ -831,6 +839,46 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                                         ))}
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* [Brief #2] Fall Hazard Warning Banner */}
+                {fallHazardStatus?.detected && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 mb-4 rounded-r-xl shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+                        <div className="flex items-start">
+                            <span className="material-symbols-outlined text-red-500 text-2xl mr-3 mt-0.5">warning</span>
+                            <div className="flex-1">
+                                <h4 className="text-red-800 dark:text-red-200 font-bold text-sm flex items-center gap-2">
+                                    ⚠️ 추락 위험 우선 경고
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                        fallHazardStatus.confidence === "high"
+                                            ? "bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200"
+                                            : "bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200"
+                                    }`}>
+                                        신뢰도: {fallHazardStatus.confidence === "high" ? "높음" : fallHazardStatus.confidence === "medium" ? "중간" : "낮음"}
+                                    </span>
+                                </h4>
+                                <p className="text-red-700 dark:text-red-300 text-xs mt-1 leading-relaxed">
+                                    고소작업이 감지되었습니다. <strong>추락사고는 건설업 사망사고의 71%</strong>를 차지합니다.
+                                    <br />추락 관련 모든 항목이 최우선으로 검증됩니다.
+                                </p>
+                                {fallHazardStatus.indicators && fallHazardStatus.indicators.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-1">
+                                        {fallHazardStatus.indicators.slice(0, 5).map((indicator, idx) => (
+                                            <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-800/50 text-red-700 dark:text-red-300">
+                                                {indicator}
+                                            </span>
+                                        ))}
+                                        {fallHazardStatus.indicators.length > 5 && (
+                                            <span className="text-xs text-red-500">+{fallHazardStatus.indicators.length - 5}개 더</span>
+                                        )}
+                                    </div>
+                                )}
+                                <p className="text-xs text-red-500 dark:text-red-400 mt-2 italic">
+                                    출처: Hwang et al. (2023) - 소규모 건설현장 사망사고 분석 연구
+                                </p>
                             </div>
                         </div>
                     </div>
