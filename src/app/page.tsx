@@ -1645,11 +1645,19 @@ export default function Page() {
 
         // Progress state is NOT restored - it's ephemeral and only relevant during active validation
       } else {
-        clearDocumentState();
+        // Skip clearing state if a file is being actively processed (race condition prevention)
+        // This handles the case where user uploads a file and showWelcome changes before
+        // the file state is persisted to IndexedDB
+        if (!pendingFile && !showDocTypeSelector) {
+          clearDocumentState();
+        }
       }
     } catch (e) {
       console.error("Failed to load project state", e);
-      clearDocumentState();
+      // Only clear on error if not actively processing a file
+      if (!pendingFile && !showDocTypeSelector) {
+        clearDocumentState();
+      }
     }
   }
 
