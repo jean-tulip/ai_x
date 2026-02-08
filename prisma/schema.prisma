@@ -43,6 +43,7 @@ model Report {
   tbmExtractedInspector String?  // 담당자 이름
   tbmParticipants       String?  // JSON array of participants
   tbmCompletenessJson   String?  // JSON: { score, level, breakdown, missingTopics, suggestions }
+  tbmEngagementJson     String?  // Brief #3: JSON for engagement quality scoring
 
   // Relation to Project context
   projectId   String?

@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/contexts/ToastContext";
 import { exportReportToPDF } from "@/lib/pdfExport";
+import { classifyUserMessage } from "@/lib/chatMessageClassifier";
+import { markdownToReactHtml } from "@/lib/simpleMarkdown";
 
 interface ChatMessage {
   role: "ai" | "user";
@@ -27,6 +29,12 @@ interface ChatPanelProps {
   // External message injection (for corrective action button)
   externalMessage?: string | null;
   onExternalMessageSent?: () => void; // Callback to clear the external message
+
+  // [Brief #5] Lifted narrative state - shared with AnalysisPanel via parent
+  synthesisNarrative?: string | null;
+  correctiveAction?: string | null;
+  onSynthesisNarrativeChange?: (narrative: string | null) => void;
+  onCorrectiveActionChange?: (action: string | null) => void;
 }
 
 
@@ -44,6 +52,11 @@ export function ChatPanel({
   reportContext,    // ✅ MCP
   externalMessage,
   onExternalMessageSent,
+  // [Brief #5] Lifted narrative state
+  synthesisNarrative: externalSynthesis,
+  correctiveAction: externalCorrective,
+  onSynthesisNarrativeChange,
+  onCorrectiveActionChange,
 }: ChatPanelProps) {
 
 
@@ -54,10 +67,40 @@ export function ChatPanel({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
 
-  // Reset local chat when the document changes (messages prop changes)
+  // [Brief #5] Capture synthesis and corrective action narratives for PDF export
+  // Use external state if provided (lifted to parent), otherwise use local state
+  const [localSynthesis, setLocalSynthesis] = useState<string | null>(null);
+  const [localCorrective, setLocalCorrective] = useState<string | null>(null);
+
+  const synthesisNarrative = externalSynthesis !== undefined ? externalSynthesis : localSynthesis;
+  const correctiveAction = externalCorrective !== undefined ? externalCorrective : localCorrective;
+
+  const setSynthesisNarrative = (value: string | null) => {
+    if (onSynthesisNarrativeChange) {
+      onSynthesisNarrativeChange(value);
+    } else {
+      setLocalSynthesis(value);
+    }
+  };
+
+  const setCorrectiveAction = (value: string | null) => {
+    if (onCorrectiveActionChange) {
+      onCorrectiveActionChange(value);
+    } else {
+      setLocalCorrective(value);
+    }
+  };
+
+  // Reset local chat and narrative captures when the document changes (messages prop changes)
   // This ensures follow-up conversation doesn't persist across document switches
   useEffect(() => {
     setChatMessages([]);
+    // Only reset local state, not external (parent controls that)
+    setLocalSynthesis(null);
+    setLocalCorrective(null);
+    // Also notify parent to reset if callbacks exist
+    onSynthesisNarrativeChange?.(null);
+    onCorrectiveActionChange?.(null);
   }, [messages]);
 
   const scrollToBottom = () => {
@@ -98,6 +141,15 @@ export function ChatPanel({
 
           const data = await res.json();
           if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+          // [Brief #5] Capture synthesis/corrective action for PDF export
+          const messageType = classifyUserMessage(externalMessage);
+          if (messageType === "synthesis") {
+            setSynthesisNarrative(data.reply);
+          }
+          if (messageType === "corrective_action") {
+            setCorrectiveAction(data.reply);
+          }
 
           setChatMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
         } catch (e: any) {
@@ -145,6 +197,15 @@ export function ChatPanel({
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
 
+    // [Brief #5] Capture synthesis/corrective action for PDF export
+    const messageType = classifyUserMessage(text);
+    if (messageType === "synthesis") {
+      setSynthesisNarrative(data.reply);
+    }
+    if (messageType === "corrective_action") {
+      setCorrectiveAction(data.reply);
+    }
+
     // 3) AI 응답 추가
     setChatMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
   } catch (e: any) {
@@ -181,6 +242,7 @@ export function ChatPanel({
         title: i.title,
         message: i.message,
         ruleId: i.ruleId,
+        rootCause: i.rootCause || null,
       })),
       summary: {
         totalIssues: issues.length,
@@ -217,6 +279,10 @@ export function ChatPanel({
         mismatches: issues.filter(i => i.ruleId?.startsWith("photo_") && i.severity === "error").length,
         warnings: issues.filter(i => i.ruleId?.startsWith("photo_") && i.severity === "warn").length,
       } : undefined,
+
+      // [Brief #5] Narrative content for PDF restructure
+      synthesisNarrative: synthesisNarrative || undefined,
+      correctiveAction: correctiveAction || undefined,
     };
 
 
@@ -386,9 +452,16 @@ export function ChatPanel({
                   {msg.role === "ai" ? "AI 분석" : "사용자"}
                 </span>
               </div>
-              <div className={`text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "ai" ? "text-slate-800 dark:text-slate-200" : "text-white"}`}>
-                {msg.text}
-              </div>
+              {msg.role === "ai" ? (
+                <div
+                  className="text-sm leading-relaxed text-slate-800 dark:text-slate-200"
+                  dangerouslySetInnerHTML={markdownToReactHtml(msg.text)}
+                />
+              ) : (
+                <div className="text-sm leading-relaxed whitespace-pre-wrap text-white">
+                  {msg.text}
+                </div>
+              )}
             </div>
           </div>
         ))}

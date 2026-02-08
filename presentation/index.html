@@ -48,6 +48,116 @@
       line-height: 1.5;
     }
 
+    /* ===== Background Patterns ===== */
+    .dot-pattern {
+      background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .grid-pattern {
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-position: -1px -1px;
+    }
+
+    /* ===== Decorative Blobs ===== */
+    .blob {
+      position: absolute !important;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 0 !important;
+      flex-shrink: 0;
+      flex-grow: 0;
+    }
+
+    .blob-primary {
+      background: var(--primary-light);
+    }
+
+    .blob-danger {
+      background: var(--danger-light);
+    }
+
+    .blob-purple {
+      background: var(--purple-light);
+    }
+
+    /* ===== Animations ===== */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes fadeInRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .slide.active .animate-up {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .slide.active .animate-left {
+      animation: fadeInLeft 0.6s ease forwards;
+    }
+
+    .slide.active .animate-right {
+      animation: fadeInRight 0.6s ease forwards;
+    }
+
+    .slide.active .animate-scale {
+      animation: scaleIn 0.5s ease forwards;
+    }
+
+    .slide.active .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .slide.active .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .slide.active .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .slide.active .delay-4 { animation-delay: 0.4s; opacity: 0; }
+    .slide.active .delay-5 { animation-delay: 0.5s; opacity: 0; }
+
     /* Layout */
     .slides {
       height: 100vh;
@@ -65,12 +175,14 @@
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.5s ease;
+      overflow: hidden;
     }
 
     .slide.active {
       opacity: 1;
       visibility: visible;
     }
+
 
     /* Progress */
     .progress {
@@ -172,6 +284,24 @@
       align-items: center;
       text-align: center;
       background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg) 50%);
+    }
+
+    .slide-title .university-logo {
+      position: absolute;
+      top: 32px;
+      right: 48px;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      z-index: 10;
+    }
+
+    .slide-title .university-logo img {
+      height: 36px;
+      width: auto;
+      display: block;
     }
 
     .badge {
@@ -352,13 +482,24 @@
       border-radius: 12px;
       padding: 24px;
       text-align: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-top: 3px solid var(--primary);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
     }
 
     .feature-card .material-symbols-outlined {
-      font-size: 36px;
+      font-size: 32px;
       color: var(--primary);
       margin-bottom: 16px;
+      background: var(--primary-light);
+      padding: 12px;
+      border-radius: 12px;
+      display: inline-block;
     }
 
     .feature-card h4 {
@@ -381,13 +522,211 @@
 
     .slide-architecture .arch-container {
       width: 100%;
-      max-width: 1100px;
-      margin-top: 32px;
+      max-width: 100%;
+      margin-top: 8px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
+    .slide-architecture .arch-container img,
     .slide-architecture .arch-container object {
-      width: 100%;
+      width: 95vw;
       height: auto;
+      max-height: 70vh;
+      object-fit: contain;
+    }
+
+    /* Synthesis Architecture Diagram */
+    .synthesis-arch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      margin-top: 32px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .source-layer {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+    }
+
+    .source-box {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .source-box.doc { border-color: var(--primary); }
+    .source-box.tbm { border-color: var(--purple); }
+    .source-box.photo { border-color: var(--cyan); }
+
+    .source-box .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .source-box.doc .icon { color: var(--primary); }
+    .source-box.tbm .icon { color: var(--purple); }
+    .source-box.photo .icon { color: var(--cyan); }
+
+    .source-box h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .source-box p {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .flow-arrows {
+      display: flex;
+      justify-content: center;
+      gap: 120px;
+      color: var(--text-light);
+      font-size: 28px;
+    }
+
+    .context-layer {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+    }
+
+    .context-box {
+      background: var(--surface);
+      border: 1px dashed var(--border-dark);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .context-box strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .synthesis-box {
+      background: linear-gradient(135deg, var(--primary-light) 0%, #f0fdf4 100%);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 24px 40px;
+      text-align: center;
+      width: 80%;
+    }
+
+    .synthesis-box h4 {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .synthesis-features {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .synthesis-features span {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg);
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .ai-output {
+      background: var(--text);
+      color: white;
+      border-radius: 12px;
+      padding: 16px 32px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Slide 7b: Cross-Source Highlight */
+    .slide-synthesis {
+      align-items: center;
+      text-align: center;
+    }
+
+    .synthesis-highlight {
+      background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg) 100%);
+      border: 2px solid var(--primary-border);
+      border-radius: 20px;
+      padding: 48px 64px;
+      margin-top: 40px;
+      max-width: 900px;
+    }
+
+    .synthesis-highlight .big-stat {
+      font-size: 80px;
+      font-weight: 900;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .synthesis-highlight .stat-label {
+      font-size: 20px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .synthesis-examples {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      text-align: left;
+    }
+
+    .synth-example {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .synth-example .source-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .synth-example.doc .source-tag { color: var(--primary); }
+    .synth-example.tbm .source-tag { color: var(--purple); }
+    .synth-example.photo .source-tag { color: var(--cyan); }
+
+    .synth-example p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .synthesis-conclusion {
+      margin-top: 32px;
+      font-size: 18px;
+      color: var(--primary);
+      font-weight: 700;
     }
 
     /* Slide 8: Research */
@@ -409,7 +748,13 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 24px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border-left: 4px solid var(--purple);
+      transition: transform 0.3s ease;
+    }
+
+    .research-card:hover {
+      transform: translateY(-2px);
     }
 
     .research-card .category {
@@ -671,7 +1016,13 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 28px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border-top: 3px solid var(--warning);
+      transition: transform 0.3s ease;
+    }
+
+    .challenge-card:hover {
+      transform: translateY(-2px);
     }
 
     .challenge-card .num {
@@ -771,48 +1122,117 @@
 
     <!-- ============ SLIDE 1: Title ============ -->
     <div class="slide slide-title active">
-      <div class="badge">
+      <!-- Background with gradient and pattern -->
+      <div style="position: absolute; inset: 0; background: linear-gradient(135deg, #dcfce7 0%, #ffffff 40%, #f0fdf4 100%); z-index: 0;"></div>
+      <div style="position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, #16a34a10 1px, transparent 0); background-size: 32px 32px; z-index: 0;"></div>
+
+      <!-- Decorative shapes -->
+      <div style="position: absolute; top: 15%; left: 8%; width: 120px; height: 120px; background: linear-gradient(135deg, #16a34a20, #16a34a05); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; z-index: 0;"></div>
+      <div style="position: absolute; bottom: 20%; right: 10%; width: 180px; height: 180px; background: linear-gradient(135deg, #16a34a15, transparent); border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; z-index: 0;"></div>
+      <div style="position: absolute; top: 60%; left: 5%; width: 80px; height: 80px; border: 2px solid #16a34a20; border-radius: 50%; z-index: 0;"></div>
+      <div style="position: absolute; top: 25%; right: 15%; width: 60px; height: 60px; border: 2px solid #16a34a15; border-radius: 12px; transform: rotate(15deg); z-index: 0;"></div>
+
+      <!-- Floating feature icons -->
+      <div style="position: absolute; top: 22%; left: 12%; background: white; padding: 14px; border-radius: 16px; box-shadow: 0 8px 32px rgba(22, 163, 74, 0.15); z-index: 1; animation: float 4s ease-in-out infinite;">
+        <span class="material-symbols-outlined" style="font-size: 28px; color: #16a34a;">description</span>
+      </div>
+      <div style="position: absolute; top: 35%; right: 12%; background: white; padding: 14px; border-radius: 16px; box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15); z-index: 1; animation: float 4s ease-in-out infinite 0.5s;">
+        <span class="material-symbols-outlined" style="font-size: 28px; color: #7c3aed;">mic</span>
+      </div>
+      <div style="position: absolute; bottom: 28%; left: 15%; background: white; padding: 14px; border-radius: 16px; box-shadow: 0 8px 32px rgba(8, 145, 178, 0.15); z-index: 1; animation: float 4s ease-in-out infinite 1s;">
+        <span class="material-symbols-outlined" style="font-size: 28px; color: #0891b2;">photo_camera</span>
+      </div>
+      <div style="position: absolute; bottom: 35%; right: 18%; background: white; padding: 14px; border-radius: 16px; box-shadow: 0 8px 32px rgba(220, 38, 38, 0.15); z-index: 1; animation: float 4s ease-in-out infinite 1.5s;">
+        <span class="material-symbols-outlined" style="font-size: 28px; color: #dc2626;">verified_user</span>
+      </div>
+
+      <!-- University Logo -->
+      <div class="university-logo" style="z-index: 10;">
+        <img src="https://www.gnu.ac.kr/images/web/main/layout/logo.png" alt="경상국립대학교">
+      </div>
+
+      <!-- Main content -->
+      <div class="badge animate-scale delay-1" style="z-index: 2;">
         <span>GNU RISE AI+X 2026</span>
         <div class="dot"></div>
         <span>Team Luna</span>
       </div>
-      <h1>스마트 안전지킴이</h1>
-      <p class="tagline">AI 기반 건설 안전서류 검증 시스템</p>
-    </div>
 
-    <!-- ============ SLIDE 2: Hook ============ -->
-    <div class="slide slide-hook">
-      <p class="hook-question">
-        매년 <span class="hl-danger">수백만 장</span>의 안전서류가 작성됩니다.<br>
-        <span class="dim">그런데, 누가 읽을까요?</span>
-      </p>
-      <p class="hook-subtext">
-        서류는 쌓이고, 사고는 계속됩니다.
-      </p>
-    </div>
+      <h1 class="animate-up delay-2" style="z-index: 2; background: linear-gradient(135deg, #111827 0%, #16a34a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">스마트 안전지킴이</h1>
 
-    <!-- ============ SLIDE 3: Statistics ============ -->
-    <div class="slide slide-stats">
-      <div class="eyebrow">연구 기반 통계</div>
-      <h2>소규모 현장, <span class="hl-danger">불균형한 위험</span></h2>
+      <p class="tagline animate-up delay-3" style="z-index: 2; font-size: 22px; margin-top: 16px;">AI 기반 건설 안전서류 검증 시스템</p>
 
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="number">91.5<span class="unit">%</span></div>
-          <div class="label">전체 건설현장 중<br>소규모 현장 비율</div>
-          <div class="source">Hwang et al., Buildings 2023</div>
+      <!-- Feature highlights -->
+      <div style="display: flex; gap: 16px; margin-top: 40px; z-index: 2;" class="animate-up delay-4">
+        <div style="display: flex; align-items: center; gap: 8px; background: white; padding: 10px 18px; border-radius: 100px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+          <span class="material-symbols-outlined" style="font-size: 18px; color: #16a34a;">check_circle</span>
+          <span style="font-size: 13px; font-weight: 600; color: #374151;">50+ 검증 규칙</span>
         </div>
-        <div class="stat-card">
-          <div class="number">72.3<span class="unit">%</span></div>
-          <div class="label">소규모 현장에서 발생하는<br>건설업 사망사고 비율</div>
-          <div class="source">Hwang et al., Buildings 2023</div>
+        <div style="display: flex; align-items: center; gap: 8px; background: white; padding: 10px 18px; border-radius: 100px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+          <span class="material-symbols-outlined" style="font-size: 18px; color: #7c3aed;">psychology</span>
+          <span style="font-size: 13px; font-weight: 600; color: #374151;">AI 교차검증</span>
         </div>
-        <div class="stat-card">
-          <div class="number">4.43<span class="unit">배</span></div>
-          <div class="label">대형 현장 대비<br>소규모 현장 사망률</div>
-          <div class="source">Hwang et al., Buildings 2023</div>
+        <div style="display: flex; align-items: center; gap: 8px; background: white; padding: 10px 18px; border-radius: 100px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+          <span class="material-symbols-outlined" style="font-size: 18px; color: #dc2626;">shield</span>
+          <span style="font-size: 13px; font-weight: 600; color: #374151;">사전 예방</span>
         </div>
       </div>
+    </div>
+
+    <!-- ============ SLIDE 2: Hook + Stats (Merged) ============ -->
+    <div class="slide slide-hook dot-pattern" style="padding: 40px 60px;">
+      <!-- Decorative blobs -->
+      <div class="blob blob-danger" style="width: 350px; height: 350px; top: 10%; left: 5%;"></div>
+      <div class="blob blob-purple" style="width: 250px; height: 250px; bottom: 10%; right: 10%;"></div>
+
+      <div style="display: flex; align-items: center; gap: 50px;">
+        <!-- Left: Big number + context -->
+        <div style="text-align: center; min-width: 300px;" class="animate-left delay-1">
+          <div style="font-size: 100px; font-weight: 900; color: var(--danger); line-height: 1.1; letter-spacing: -3px; padding-bottom: 16px;">2,098</div>
+          <p style="font-size: 16px; color: var(--text-muted); margin-top: 0;">2024년 산업재해 사망자 수</p>
+          <p style="font-size: 13px; color: var(--text-dim); margin-top: 20px; line-height: 1.6;">
+            연간 <strong style="color: var(--danger);">36조원</strong> 손실<br>
+            <span style="font-size: 11px;">— 많은 국가의 GDP보다 큽니다</span>
+          </p>
+        </div>
+
+        <!-- Right: Stats grid -->
+        <div class="animate-right delay-2">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--text);">91.5<span style="font-size: 14px;">%</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">소규모 현장 비율</div>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--text);">72.3<span style="font-size: 14px;">%</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">소규모 현장 사망비율</div>
+            </div>
+            <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--danger);">4.4<span style="font-size: 14px;">배</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">소규모 현장 사망률</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px;">
+            <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--danger);">36.4<span style="font-size: 14px;">조원</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">2023년 경제적 손실</div>
+            </div>
+            <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 10px; padding: 14px 16px; text-align: center;">
+              <div style="font-size: 28px; font-weight: 900; color: var(--danger);">150.7<span style="font-size: 14px;">조원</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">5년 누적 손실</div>
+            </div>
+          </div>
+
+          <div style="font-size: 9px; color: var(--text-light); margin-top: 10px; text-align: right;">
+            출처: Hwang et al., Buildings 2023 / 더나은미래, 2024
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size: 17px; color: var(--text-dim); margin-top: 28px; text-align: center;">
+        서류는 쌓이고, 사고는 계속됩니다.
+      </p>
     </div>
 
     <!-- ============ SLIDE 4: Hidden Problem ============ -->
@@ -862,45 +1282,52 @@
     </div>
 
     <!-- ============ SLIDE 5: Insight ============ -->
-    <div class="slide slide-insight">
-      <div class="eyebrow">핵심 통찰</div>
-      <h2>문서가 문제가 아닙니다.</h2>
+    <div class="slide slide-insight dot-pattern">
+      <!-- Decorative blobs -->
+      <div class="blob blob-primary" style="width: 400px; height: 400px; top: 20%; right: -100px;"></div>
 
-      <div class="insight-box">
-        <p>검증의 부재가 문제입니다.</p>
+      <div class="eyebrow animate-up delay-1">핵심 통찰</div>
+      <h2 class="animate-up delay-2">문서는 있습니다.</h2>
+
+      <div class="insight-box animate-scale delay-3">
+        <p>읽고 검증하는 시스템이 없습니다.</p>
       </div>
 
       <p class="lead" style="margin-top: 40px; text-align: center;">
-        "사고 패턴은 복잡하고 종종 보이지 않아, 근본 원인 파악이 어렵다"<br>
+        "소규모 현장의 안전 조치는 과소평가되며, 체계적 준비가 부족하다"<br>
         <span class="hl">AI가 사람을 대신해 모든 서류를 읽고, 숨겨진 문제를 찾습니다.</span>
       </p>
     </div>
 
     <!-- ============ SLIDE 6: Solution ============ -->
-    <div class="slide slide-solution">
+    <div class="slide slide-solution grid-pattern">
+      <!-- Decorative blobs -->
+      <div class="blob blob-primary" style="width: 300px; height: 300px; bottom: -50px; left: -50px;"></div>
+      <div class="blob blob-purple" style="width: 250px; height: 250px; top: -50px; right: 20%;"></div>
+
       <div class="solution-header">
-        <div class="eyebrow">해결책</div>
-        <h2><span class="hl">스마트 안전지킴이</span>가 하는 일</h2>
-        <p class="lead">5단계 검증 프레임워크로 50개 이상의 규칙을 자동 검사합니다</p>
+        <div class="eyebrow animate-up delay-1">해결책</div>
+        <h2 class="animate-up delay-2"><span class="hl">스마트 안전지킴이</span>가 하는 일</h2>
+        <p class="lead animate-up delay-3">5단계 검증 프레임워크로 50개 이상의 규칙을 자동 검사합니다</p>
       </div>
 
       <div class="solution-features">
-        <div class="feature-card">
+        <div class="feature-card animate-up delay-2">
           <span class="material-symbols-outlined">upload_file</span>
           <h4>서류 분석</h4>
           <p>PDF, 이미지 업로드 →<br>AI가 내용 추출 및 검증</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card animate-up delay-3">
           <span class="material-symbols-outlined">mic</span>
           <h4>TBM 녹음</h4>
           <p>안전미팅 녹음 →<br>자동 전사 및 완전성 평가</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card animate-up delay-4">
           <span class="material-symbols-outlined">photo_camera</span>
           <h4>사진 교차검증</h4>
           <p>현장 사진 vs 체크리스트<br>일치 여부 AI 확인</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card animate-up delay-5">
           <span class="material-symbols-outlined">psychology</span>
           <h4>부정행위 감지</h4>
           <p>복사-붙여넣기, 패턴 반복<br>타임라인 공백 탐지</p>
@@ -908,17 +1335,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 7: Architecture ============ -->
-    <div class="slide slide-architecture">
-      <div class="eyebrow">시스템 구성</div>
-      <h2>어떻게 작동하나요?</h2>
-
-      <div class="arch-container">
-        <object type="image/svg+xml" data="architecture.svg" aria-label="시스템 구성"></object>
-      </div>
-    </div>
-
-    <!-- ============ SLIDE 8: Research Evidence ============ -->
+    <!-- ============ SLIDE 7: Research Evidence ============ -->
     <div class="slide slide-research">
       <div class="eyebrow">연구 기반</div>
       <h2>AI 안전 관리, <span class="hl">연구가 증명합니다</span></h2>
@@ -951,10 +1368,15 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 9: Root Cause Mapping ============ -->
+    <!-- ============ SLIDE 8: Root Cause Mapping ============ -->
     <div class="slide slide-mapping">
       <div class="eyebrow">연구 → 기능 매핑</div>
       <h2>사고 원인 <span class="hl">7가지</span>, 우리의 해결책</h2>
+
+      <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 8px; padding: 12px 20px; margin-bottom: 24px; display: inline-flex; align-items: center; gap: 12px;">
+        <span class="material-symbols-outlined" style="color: var(--danger);">warning</span>
+        <span style="font-size: 14px;"><strong style="color: var(--danger);">71%</strong>의 건설업 사망사고가 <strong>추락</strong>으로 발생 → 추락 위험은 <span style="color: var(--danger); font-weight: 700;">자동 우선 경고</span></span>
+      </div>
 
       <table class="mapping-table">
         <thead>
@@ -1006,9 +1428,221 @@
       <p class="mapping-source">근본 원인 출처: Hwang et al., Buildings 2023 / MDPI Systematic Review 2025</p>
     </div>
 
-    <!-- ============ SLIDE 10: Demo ============ -->
-    <div class="slide slide-demo">
-      <div class="eyebrow">라이브 데모</div>
+    <!-- ============ SLIDE 9: Architecture (Full System) ============ -->
+    <div class="slide slide-architecture" style="padding: 20px 30px;">
+      <div class="eyebrow">시스템 구성</div>
+      <h2 style="font-size: 32px; margin-bottom: 8px;">어떻게 작동하나요?</h2>
+
+      <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" style="width: 100%; max-width: 1400px; height: auto; max-height: 65vh;" font-family="'Noto Sans KR', sans-serif">
+          <defs>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+            </filter>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#9ca3af"/>
+            </marker>
+            <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#16a34a"/>
+            </marker>
+          </defs>
+          <rect width="1200" height="480" fill="#fafafa"/>
+          <text x="100" y="85" fill="#16a34a" font-size="12" font-weight="700" letter-spacing="1">INPUT</text>
+          <rect x="30" y="100" width="140" height="70" rx="8" fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
+          <text x="100" y="130" text-anchor="middle" fill="#6b7280" font-size="11">사용자 업로드</text>
+          <text x="100" y="150" text-anchor="middle" fill="#18181b" font-size="13" font-weight="700">PDF / 이미지</text>
+          <rect x="30" y="185" width="140" height="70" rx="8" fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
+          <text x="100" y="215" text-anchor="middle" fill="#6b7280" font-size="11">TBM 녹음</text>
+          <text x="100" y="235" text-anchor="middle" fill="#18181b" font-size="13" font-weight="700">음성 파일</text>
+          <rect x="30" y="270" width="140" height="70" rx="8" fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
+          <text x="100" y="300" text-anchor="middle" fill="#6b7280" font-size="11">현장 사진</text>
+          <text x="100" y="320" text-anchor="middle" fill="#18181b" font-size="13" font-weight="700">이미지 파일</text>
+          <rect x="30" y="355" width="140" height="70" rx="8" fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
+          <text x="100" y="385" text-anchor="middle" fill="#6b7280" font-size="11">프로젝트 설정</text>
+          <text x="100" y="405" text-anchor="middle" fill="#18181b" font-size="13" font-weight="700">마스터 안전계획</text>
+          <text x="250" y="85" fill="#6b7280" font-size="12" font-weight="700" letter-spacing="1">전처리</text>
+          <rect x="210" y="100" width="100" height="55" rx="8" fill="#f3f4f6" stroke="#d1d5db" filter="url(#shadow)"/>
+          <text x="260" y="125" text-anchor="middle" fill="#374151" font-size="11" font-weight="700">PDF.js</text>
+          <text x="260" y="143" text-anchor="middle" fill="#6b7280" font-size="10">텍스트 추출</text>
+          <text x="250" y="175" fill="#8b5cf6" font-size="10" font-weight="700" letter-spacing="1">AI 전처리</text>
+          <rect x="210" y="185" width="100" height="55" rx="8" fill="#f5f3ff" stroke="#8b5cf6" filter="url(#shadow)"/>
+          <text x="260" y="210" text-anchor="middle" fill="#7c3aed" font-size="11" font-weight="700">Whisper</text>
+          <text x="260" y="228" text-anchor="middle" fill="#6b7280" font-size="10">음성 → 텍스트</text>
+          <rect x="210" y="270" width="100" height="55" rx="8" fill="#f5f3ff" stroke="#8b5cf6" filter="url(#shadow)"/>
+          <text x="260" y="295" text-anchor="middle" fill="#7c3aed" font-size="11" font-weight="700">GPT-4o Vision</text>
+          <text x="260" y="313" text-anchor="middle" fill="#6b7280" font-size="10">이미지 분석</text>
+          <rect x="350" y="120" width="150" height="100" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2" filter="url(#shadow)"/>
+          <text x="425" y="155" text-anchor="middle" fill="#16a34a" font-size="12" font-weight="700">AI 문서 추출</text>
+          <text x="425" y="175" text-anchor="middle" fill="#374151" font-size="10">Claude Sonnet 4</text>
+          <text x="425" y="190" text-anchor="middle" fill="#374151" font-size="10">GPT-4o (fallback)</text>
+          <text x="425" y="208" text-anchor="middle" fill="#6b7280" font-size="9">필드, 체크리스트, 서명 추출</text>
+          <text x="600" y="85" fill="#16a34a" font-size="12" font-weight="700" letter-spacing="1">5-STAGE VALIDATION ENGINE</text>
+          <rect x="540" y="100" width="250" height="330" rx="12" fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
+          <rect x="555" y="115" width="220" height="50" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+          <text x="570" y="137" fill="#dc2626" font-size="10" font-weight="700">Stage 1</text>
+          <text x="630" y="137" fill="#18181b" font-size="11" font-weight="600">형식 검증</text>
+          <text x="570" y="153" fill="#6b7280" font-size="9">필수 필드, 서명, 날짜 확인</text>
+          <rect x="555" y="175" width="220" height="50" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+          <text x="570" y="197" fill="#d97706" font-size="10" font-weight="700">Stage 2</text>
+          <text x="630" y="197" fill="#18181b" font-size="11" font-weight="600">논리 검증</text>
+          <text x="570" y="213" fill="#6b7280" font-size="9">22개 규칙, 모순 탐지</text>
+          <rect x="555" y="235" width="220" height="50" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+          <text x="570" y="257" fill="#16a34a" font-size="10" font-weight="700">Stage 3</text>
+          <text x="630" y="257" fill="#18181b" font-size="11" font-weight="600">교차 분석</text>
+          <text x="570" y="273" fill="#6b7280" font-size="9">위험도 행렬, 문서간 비교, 사진 검증</text>
+          <rect x="555" y="295" width="220" height="50" rx="6" fill="#f5f3ff" stroke="#ddd6fe"/>
+          <text x="570" y="317" fill="#7c3aed" font-size="10" font-weight="700">Stage 4</text>
+          <text x="630" y="317" fill="#18181b" font-size="11" font-weight="600">패턴 분석</text>
+          <text x="570" y="333" fill="#6b7280" font-size="9">복사-붙여넣기, 항상체크 감지</text>
+          <rect x="555" y="355" width="220" height="50" rx="6" fill="#ecfeff" stroke="#a5f3fc"/>
+          <text x="570" y="377" fill="#0891b2" font-size="10" font-weight="700">Stage 5</text>
+          <text x="630" y="377" fill="#18181b" font-size="11" font-weight="600">상황별 검토</text>
+          <text x="570" y="393" fill="#6b7280" font-size="9">AI 기반 맥락 안전 분석</text>
+          <text x="425" y="280" fill="#16a34a" font-size="12" font-weight="700" letter-spacing="1">DATABASE</text>
+          <ellipse cx="425" cy="310" rx="55" ry="15" fill="#e5e7eb" stroke="#d1d5db"/>
+          <rect x="370" y="310" width="110" height="70" fill="#e5e7eb" stroke="#d1d5db"/>
+          <ellipse cx="425" cy="380" rx="55" ry="15" fill="#e5e7eb" stroke="#d1d5db"/>
+          <ellipse cx="425" cy="310" rx="55" ry="15" fill="#f3f4f6" stroke="#d1d5db"/>
+          <text x="425" y="340" text-anchor="middle" fill="#18181b" font-size="11" font-weight="600">SQLite / Postgres</text>
+          <text x="425" y="358" text-anchor="middle" fill="#6b7280" font-size="9">검증 기록, 프로젝트</text>
+          <text x="425" y="373" text-anchor="middle" fill="#6b7280" font-size="9">점검자 패턴 이력</text>
+          <text x="880" y="85" fill="#16a34a" font-size="12" font-weight="700" letter-spacing="1">OUTPUT</text>
+          <rect x="840" y="100" width="140" height="65" rx="8" fill="#ffffff" stroke="#dc2626" filter="url(#shadow)"/>
+          <text x="910" y="125" text-anchor="middle" fill="#dc2626" font-size="11" font-weight="700">문제점 목록</text>
+          <text x="910" y="145" text-anchor="middle" fill="#6b7280" font-size="10">심각도별 분류</text>
+          <text x="910" y="158" text-anchor="middle" fill="#9ca3af" font-size="9">KOSHA 기준 참조</text>
+          <rect x="840" y="180" width="140" height="65" rx="8" fill="#ffffff" stroke="#d97706" filter="url(#shadow)"/>
+          <text x="910" y="205" text-anchor="middle" fill="#d97706" font-size="11" font-weight="700">위험도 점수</text>
+          <text x="910" y="225" text-anchor="middle" fill="#6b7280" font-size="10">0-100 객관적 산출</text>
+          <text x="910" y="238" text-anchor="middle" fill="#9ca3af" font-size="9">요인별 분석 제공</text>
+          <rect x="840" y="260" width="140" height="65" rx="8" fill="#ffffff" stroke="#16a34a" filter="url(#shadow)"/>
+          <text x="910" y="285" text-anchor="middle" fill="#16a34a" font-size="11" font-weight="700">PDF 리포트</text>
+          <text x="910" y="305" text-anchor="middle" fill="#6b7280" font-size="10">종합 검증 결과</text>
+          <text x="910" y="318" text-anchor="middle" fill="#9ca3af" font-size="9">TBM 요약 포함</text>
+          <rect x="840" y="340" width="140" height="65" rx="8" fill="#ffffff" stroke="#7c3aed" filter="url(#shadow)"/>
+          <text x="910" y="365" text-anchor="middle" fill="#7c3aed" font-size="11" font-weight="700">AI 채팅</text>
+          <text x="910" y="385" text-anchor="middle" fill="#6b7280" font-size="10">문서 기반 Q&amp;A</text>
+          <text x="910" y="398" text-anchor="middle" fill="#9ca3af" font-size="9">개선 방안 도출</text>
+          <path d="M170 135 L205 135" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M170 212 L205 212" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M170 305 L205 305" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M310 127 L345 150" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M310 212 L345 175" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M310 297 L345 200" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M500 170 L535 200" stroke="#16a34a" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+          <path d="M425 295 L425 250 L500 220" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4" fill="none"/>
+          <path d="M480 345 L520 345" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4" fill="none"/>
+          <path d="M170 390 L365 350" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4" fill="none"/>
+          <path d="M790 265 L835 215" stroke="#16a34a" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+          <rect x="1000" y="100" width="170" height="50" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+          <text x="1085" y="125" text-anchor="middle" fill="#16a34a" font-size="24" font-weight="900">50+</text>
+          <text x="1085" y="142" text-anchor="middle" fill="#6b7280" font-size="10">검증 규칙</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 10: Synthesis (Merged) ============ -->
+    <div class="slide slide-architecture" style="padding: 35px 50px;">
+      <div class="eyebrow">핵심 아키텍처</div>
+      <h2 style="font-size: 34px; margin-bottom: 16px;">3개 소스 → <span class="hl">1개 지능</span></h2>
+
+      <div style="display: flex; gap: 30px; align-items: stretch;">
+        <!-- Left: Full Flow diagram -->
+        <div style="flex: 1.2;">
+          <!-- Source Layer -->
+          <div style="display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
+            <div style="flex: 1; text-align: center; padding: 14px 10px; background: var(--bg); border: 2px solid var(--primary); border-radius: 10px;">
+              <span class="material-symbols-outlined" style="color: var(--primary); font-size: 26px;">description</span>
+              <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">안전서류</div>
+              <div style="font-size: 9px; color: var(--text-dim);">PDF, 이미지</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: 14px 10px; background: var(--bg); border: 2px solid var(--purple); border-radius: 10px;">
+              <span class="material-symbols-outlined" style="color: var(--purple); font-size: 26px;">mic</span>
+              <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">TBM 음성</div>
+              <div style="font-size: 9px; color: var(--text-dim);">Whisper 전사</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: 14px 10px; background: var(--bg); border: 2px solid var(--cyan); border-radius: 10px;">
+              <span class="material-symbols-outlined" style="color: var(--cyan); font-size: 26px;">photo_camera</span>
+              <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">현장 사진</div>
+              <div style="font-size: 9px; color: var(--text-dim);">Vision AI</div>
+            </div>
+          </div>
+
+          <div style="text-align: center; font-size: 18px; color: var(--text-light); margin: 6px 0;">↓ ↓ ↓</div>
+
+          <!-- Context Layer -->
+          <div style="display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
+            <div style="flex: 1; background: var(--surface); border: 1px dashed var(--border-dark); border-radius: 8px; padding: 10px; text-align: center;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--text);">이슈 + 근본원인</div>
+              <div style="font-size: 9px; color: var(--text-dim);">RC01~RC07 분류</div>
+            </div>
+            <div style="flex: 1; background: var(--surface); border: 1px dashed var(--border-dark); border-radius: 8px; padding: 10px; text-align: center;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--text);">TBM 컨텍스트</div>
+              <div style="font-size: 9px; color: var(--text-dim);">완전성 + 참여도</div>
+            </div>
+            <div style="flex: 1; background: var(--surface); border: 1px dashed var(--border-dark); border-radius: 8px; padding: 10px; text-align: center;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--text);">사진 발견사항</div>
+              <div style="font-size: 9px; color: var(--text-dim);">PPE, 안전시설</div>
+            </div>
+          </div>
+
+          <div style="text-align: center; font-size: 18px; color: var(--text-light); margin: 6px 0;">↘ ↓ ↙</div>
+
+          <!-- Synthesis Box -->
+          <div style="background: linear-gradient(135deg, var(--primary-light) 0%, #f0fdf4 100%); border: 2px solid var(--primary); border-radius: 12px; padding: 14px; text-align: center;">
+            <h4 style="font-size: 14px; font-weight: 900; color: var(--primary); margin-bottom: 8px;">🧠 AI 종합 분석 엔진</h4>
+            <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 10px; background: var(--bg); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border);">📊 근본 원인 추적</span>
+              <span style="font-size: 10px; background: var(--bg); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border);">⚠️ 추락 위험 우선화</span>
+              <span style="font-size: 10px; background: var(--bg); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border);">💬 참여도 추정</span>
+            </div>
+          </div>
+
+          <div style="text-align: center; font-size: 18px; color: var(--text-light); margin: 6px 0;">↓</div>
+
+          <div style="background: var(--text); color: white; border-radius: 10px; padding: 10px 16px; font-size: 12px; font-weight: 600; text-align: center;">
+            종합 분석 리포트 + 시정조치 요청서 생성
+          </div>
+        </div>
+
+        <!-- Right: Example with big 3→1 -->
+        <div style="flex: 0.9; display: flex; flex-direction: column;">
+          <div style="background: var(--primary-light); border: 2px solid var(--primary-border); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 12px;">
+            <div style="font-size: 48px; font-weight: 900; color: var(--primary); line-height: 1;">3 → 1</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">서류 + TBM + 사진을 <strong>하나의 맥락</strong>으로</div>
+          </div>
+
+          <div style="flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 12px;">📋 예시: 비계 작업</div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="background: var(--bg); border-radius: 8px; padding: 10px; border-left: 3px solid var(--primary);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--primary);">📄 서류에서</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">"비계 설치 및 외벽 작업" → 추락 위험 감지 → <strong>RC02</strong></div>
+              </div>
+              <div style="background: var(--bg); border-radius: 8px; padding: 10px; border-left: 3px solid var(--purple);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--purple);">🎤 TBM에서</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">"안전대 착용 강조" → 서류와 일치 확인 ✓</div>
+              </div>
+              <div style="background: var(--bg); border-radius: 8px; padding: 10px; border-left: 3px solid var(--danger);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--cyan);">📷 사진에서</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">안전대 미착용 1명 → <strong style="color: var(--danger);">교차검증 불일치!</strong></div>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--primary); font-weight: 600; text-align: center;">
+              "따로 보면 못 잡지만, 함께 보면 잡힙니다"
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SLIDE 12: Demo ============ -->
+    <div class="slide slide-demo dot-pattern">
+      <!-- Decorative blobs -->
+      <div class="blob blob-primary" style="width: 300px; height: 300px; top: 10%; right: 5%;"></div>
+      <div class="eyebrow animate-up delay-1">라이브 데모</div>
       <h2>직접 보여드리겠습니다</h2>
 
       <div class="demo-scenario">
@@ -1038,7 +1672,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 11: Can / Can't ============ -->
+    <!-- ============ SLIDE 13: Can / Can't ============ -->
     <div class="slide slide-cancant">
       <h2>할 수 있는 것과 <span class="dim">할 수 없는 것</span></h2>
 
@@ -1107,7 +1741,7 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 12: Challenges ============ -->
+    <!-- ============ SLIDE 14: Challenges ============ -->
     <div class="slide slide-challenges">
       <div class="eyebrow">도전 과제</div>
       <h2>우리가 마주한 <span class="hl">현실적인 어려움</span></h2>
@@ -1131,33 +1765,79 @@
       </div>
     </div>
 
-    <!-- ============ SLIDE 13: Closing ============ -->
-    <div class="slide slide-closing">
-      <h2>사고는 서류에서<br><span class="hl">예방됩니다</span></h2>
+    <!-- ============ SLIDE 15: References ============ -->
+    <div class="slide slide-references">
+      <div class="eyebrow">참고 문헌</div>
+      <h2>연구 기반 <span class="hl">출처</span></h2>
 
-      <p class="closing-statement">
-        CCTV는 사고를 <strong>'기록'</strong>합니다.<br>
-        스마트 안전지킴이는 사고를 <span class="em">'예방'</span>합니다.
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1100px; margin: 32px auto 0; font-size: 13px;">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+          <h4 style="font-size: 12px; color: var(--primary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">사고 통계 & 근본 원인</h4>
+          <ul style="list-style: none; color: var(--text-muted); line-height: 1.8;">
+            <li><strong>Hwang et al. (2023)</strong> — "Analysis of Fatal Accidents in Korean Small Construction Sites" <em>Buildings</em>, 13(10), 2472</li>
+            <li style="margin-top: 8px;"><strong>Kim & Chi (2020)</strong> — "Accident Causation in Korean Construction" <em>Sustainability</em>, 12(8), 3120</li>
+            <li style="margin-top: 8px;"><strong>MDPI (2025)</strong> — "Systematic Review: AI in Construction Safety"</li>
+          </ul>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+          <h4 style="font-size: 12px; color: var(--primary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">AI 기술 검증</h4>
+          <ul style="list-style: none; color: var(--text-muted); line-height: 1.8;">
+            <li><strong>Tixier et al.</strong> — "NLP for Safety Reports" <em>Automation in Construction</em></li>
+            <li style="margin-top: 8px;"><strong>Scientific Reports (2025)</strong> — "ML for Construction Accident Prediction" (XGBoost 89%)</li>
+            <li style="margin-top: 8px;"><strong>ScienceDirect (2024)</strong> — "RAG + Knowledge Graph for Safety" (+21.5%)</li>
+            <li style="margin-top: 8px;"><strong>Peak Index (2025)</strong> — "AI Adoption in Construction Industry"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 1100px; margin: 20px auto 0; font-size: 13px;">
+        <div style="background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: 12px; padding: 20px;">
+          <h4 style="font-size: 12px; color: var(--danger); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">경제적 손실 & 정부 대응</h4>
+          <ul style="list-style: none; color: var(--text-muted); line-height: 1.8;">
+            <li><strong>36.4조원</strong> — 2023년 산업재해 경제적 손실 (~$27B) <em>더나은미래</em></li>
+            <li style="margin-top: 8px;"><strong>150.7조원</strong> — 5년간 누적 손실 (2019-2023) <em>더나은미래</em></li>
+            <li style="margin-top: 8px;"><strong>37조원</strong> — 2026년 고용노동부 산재예방 예산 <em>Labour Ministry</em></li>
+          </ul>
+        </div>
+      </div>
+
+      <p style="text-align: center; margin-top: 24px; font-size: 12px; color: var(--text-dim);">
+        모든 통계와 연구 결과는 검증된 학술 자료에 기반합니다
+      </p>
+    </div>
+
+    <!-- ============ SLIDE 16: Closing ============ -->
+    <div class="slide slide-closing dot-pattern">
+      <!-- Decorative blobs -->
+      <div class="blob blob-primary" style="width: 500px; height: 500px; bottom: -150px; left: 50%; transform: translateX(-50%);"></div>
+      <div class="blob blob-primary" style="width: 200px; height: 200px; top: 10%; left: 10%;"></div>
+      <div class="blob blob-primary" style="width: 200px; height: 200px; top: 10%; right: 10%;"></div>
+
+      <h2 class="animate-up delay-1">사고는 서류에서<br><span class="hl">예방됩니다</span></h2>
+
+      <p class="closing-statement animate-up delay-2">
+        기존 방식은 사고 <strong>'후'</strong> 대응입니다.<br>
+        스마트 안전지킴이는 사고 <span class="em">'전'</span> 예방입니다.
       </p>
 
-      <p class="lead" style="text-align: center;">
+      <p class="lead animate-up delay-3" style="text-align: center;">
         읽히지 않는 서류는 의미가 없습니다.<br>
         AI가 모든 서류를 읽고, 빈틈을 찾습니다.
       </p>
 
-      <div class="team-footer">
+      <div class="team-footer animate-scale delay-4">
         <span><strong>Team Luna</strong></span>
         <div class="divider"></div>
         <span>GNU RISE AI+X 2026</span>
         <div class="divider"></div>
-        <span>github.com/jean-tulip/ai_x</span>
+        <span>ai-x-omega.vercel.app</span>
       </div>
     </div>
 
   </div>
 
   <div class="counter">
-    <span id="current">1</span> / <span id="total">12</span>
+    <span id="current">1</span> / <span id="total">14</span>
   </div>
 
   <div class="nav-hint">

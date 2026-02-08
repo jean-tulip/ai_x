@@ -209,6 +209,17 @@ export interface ReportContext {
     }>;
     overallRisk: string | null;
   } | null;
+
+  // Root cause analysis for cross-source synthesis
+  rootCauseAnalysis?: {
+    summary: string;           // Korean summary string
+    primaryRootCause: {
+      id: string;
+      nameKo: string;
+      nameEn: string;
+    } | null;
+    counts: Record<string, number>;
+  } | null;
 }
 
 // ----------------------------------------------------------------------------

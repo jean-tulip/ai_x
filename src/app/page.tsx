@@ -48,6 +48,14 @@ type Report = {
   tbmExtractedHazards?: string | null;   // JSON array of hazards
   tbmExtractedInspector?: string | null; // 담당자 이름
   tbmParticipants?: string | null;       // JSON array of participants
+
+  // [Brief #2] Fall hazard detection status
+  fallHazardStatus?: {
+    detected: boolean;
+    confidence: "high" | "medium" | "low";
+    indicators: string[];
+    source: string;
+  } | null;
 };
 
 interface ModalDialogProps {
@@ -367,6 +375,9 @@ export default function Page() {
   const [hasUnviewedIssues, setHasUnviewedIssues] = useState(false); // Show indicator when analysis completes
     const [localChatMessages, setLocalChatMessages] = useState<{ role: "ai" | "user"; text: string }[]>([]); // Persist local chat
   const [chatExternalMessage, setChatExternalMessage] = useState<string | null>(null); // For corrective action injection
+  // [Brief #5] Lifted narrative state for PDF export - shared between desktop ChatPanel and mobile AnalysisPanel
+  const [synthesisNarrative, setSynthesisNarrative] = useState<string | null>(null);
+  const [correctiveAction, setCorrectiveAction] = useState<string | null>(null);
   const [forceAnalysisPanel, setForceAnalysisPanel] = useState<"analysis" | "issues" | null>(null); // Force switch to analysis tab
 
   // Document validation stages (5 stages)
@@ -1154,6 +1165,8 @@ export default function Page() {
           extractedInspector: r?.extractedInspector ?? null,
           participants: JSON.stringify(r?.participants ?? []),
           completenessScore: r?.completenessScore ?? null,
+          // Brief #3: Engagement quality scoring
+          engagementScore: r?.engagementScore ?? null,
         }),
       });
       if (!resp.ok) {
@@ -1384,6 +1397,7 @@ export default function Page() {
           title: i.title,
           message: i.message,
           ruleId: i.ruleId,
+          rootCause: i.rootCause || null,
         })),
         tbmSummary: report?.tbmSummary || "",
         tbmTranscript: report?.tbmTranscript || "",
@@ -1395,6 +1409,9 @@ export default function Page() {
           infoCount: issues.filter((i: any) => i.severity === "info").length,
         },
         projectId: currentProjectId,
+        // [Brief #5] Include captured narratives
+        synthesisNarrative: synthesisNarrative || undefined,
+        correctiveAction: correctiveAction || undefined,
       };
 
       const response = await fetch("/api/export-pdf", {
@@ -1444,6 +1461,7 @@ export default function Page() {
             title: i.title,
             message: i.message,
             ruleId: i.ruleId,
+            rootCause: i.rootCause || null,
           })),
           summary: exportData.summary,
         } as any);
@@ -2048,6 +2066,11 @@ export default function Page() {
                         } : null}
                         externalMessage={chatExternalMessage}
                         onExternalMessageSent={() => setChatExternalMessage(null)}
+                        // [Brief #5] Lifted narrative state
+                        synthesisNarrative={synthesisNarrative}
+                        correctiveAction={correctiveAction}
+                        onSynthesisNarrativeChange={setSynthesisNarrative}
+                        onCorrectiveActionChange={setCorrectiveAction}
                       />
 
 
@@ -2147,6 +2170,12 @@ export default function Page() {
                         } : null,
                         photoFindings: latestPhotoFindings || null,
                       } : null}
+                      fallHazardStatus={report?.fallHazardStatus}
+                      // [Brief #5] Lifted narrative state
+                      synthesisNarrative={synthesisNarrative}
+                      correctiveAction={correctiveAction}
+                      onSynthesisNarrativeChange={setSynthesisNarrative}
+                      onCorrectiveActionChange={setCorrectiveAction}
                     />
                   }
                 />

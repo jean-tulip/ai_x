@@ -8,11 +8,34 @@ interface ExportData {
     createdAt: Date;
     tbmSummary?: string;
     tbmTranscript?: string;
+
+    // [Brief #5] Narrative content captured from chat
+    synthesisNarrative?: string;   // AI's three-way synthesis response
+    correctiveAction?: string;     // AI's corrective action notice
+    // Brief #3: Engagement quality scoring
+    engagementScore?: {
+        score: number;
+        level: "high" | "medium" | "low";
+        levelKo: string;
+        factors: Array<{
+            name: string;
+            nameKo: string;
+            detected: boolean;
+            impact: number;
+            evidence?: string;
+        }>;
+        suggestions: string[];
+    };
     issues: Array<{
         severity: string;
         title: string;
         message: string;
         ruleId?: string;
+        rootCause?: {
+            id: string;
+            nameKo: string;
+            nameEn: string;
+        } | null;
     }>;
     summary: {
         totalIssues: number;
@@ -117,6 +140,15 @@ export async function exportReportToPDF(data: ExportData) {
     // Log first few issues to verify they're being passed
     if (data.issues.length > 0) {
         console.log('[PDF Export] Sample issues:', data.issues.slice(0, 3));
+        // Log root cause data specifically
+        const issuesWithRootCause = data.issues.filter(i => i.rootCause);
+        console.log('[PDF Export] Issues with rootCause:', issuesWithRootCause.length, 'of', data.issues.length);
+        if (issuesWithRootCause.length > 0) {
+            console.log('[PDF Export] Root causes found:', issuesWithRootCause.map(i => ({ ruleId: i.ruleId, rootCause: i.rootCause })));
+        } else {
+            console.log('[PDF Export] WARNING: No issues have rootCause attached! Check if ruleIds match RULE_TO_ROOT_CAUSE mapping.');
+            console.log('[PDF Export] Issue ruleIds:', data.issues.map(i => i.ruleId));
+        }
     }
 
     // DIAGNOSTIC CHECK 2: Validate data
@@ -186,7 +218,7 @@ export async function exportReportToPDF(data: ExportData) {
                     text-align: center;
                     margin-bottom: 40px;
                     padding-bottom: 20px;
-                    border-bottom: 3px solid #22c55e;
+                    border-bottom: 3px solid #334155;
                 }
 
                 .header h1 {
@@ -238,13 +270,12 @@ export async function exportReportToPDF(data: ExportData) {
                 }
 
                 .section-title {
-                    font-size: 20px;
+                    font-size: 18px;
                     font-weight: bold;
-                    color: #0f172a;
+                    color: white;
                     margin-bottom: 15px;
                     padding: 10px 15px;
-                    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-                    color: white;
+                    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
                     border-radius: 6px;
                 }
 
@@ -343,12 +374,12 @@ export async function exportReportToPDF(data: ExportData) {
                 .no-issues {
                     text-align: center;
                     padding: 40px;
-                    color: #22c55e;
+                    color: #334155;
                     font-size: 16px;
                     font-weight: 600;
-                    background: #f0fdf4;
+                    background: #f8fafc;
                     border-radius: 8px;
-                    border: 2px solid #bbf7d0;
+                    border: 2px solid #e2e8f0;
                 }
 
                 /* AI Summary */
@@ -465,23 +496,63 @@ export async function exportReportToPDF(data: ExportData) {
                 .check-fail { color: #dc2626; font-weight: 700; font-size: 16px; }
                 .check-na { color: #94a3b8; font-size: 12px; }
 
-                /* Issue stage headers */
+                /* Issue stage headers - muted, professional colors */
                 .stage-header {
-                    font-size: 14px;
-                    font-weight: 700;
+                    font-size: 13px;
+                    font-weight: 600;
                     padding: 8px 12px;
-                    border-radius: 6px;
+                    border-radius: 4px;
                     margin: 15px 0 10px 0;
-                    color: white;
+                    border-left: 4px solid;
                 }
-                .stage-format { background: linear-gradient(135deg, #ef4444, #dc2626); }
-                .stage-cross { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-                .stage-pattern { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-                .stage-contextual { background: linear-gradient(135deg, #14b8a6, #0d9488); }
-                .stage-photo { background: linear-gradient(135deg, #22c55e, #16a34a); }
+                .stage-format { background: #fef2f2; color: #991b1b; border-color: #dc2626; }
+                .stage-cross { background: #eff6ff; color: #1e40af; border-color: #3b82f6; }
+                .stage-pattern { background: #f5f3ff; color: #5b21b6; border-color: #8b5cf6; }
+                .stage-contextual { background: #f0fdfa; color: #115e59; border-color: #14b8a6; }
+                .stage-photo { background: #f0fdf4; color: #166534; border-color: #22c55e; }
 
                 .tbm-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;}
                 .tbm-text{white-space:pre-wrap;color:#0f172a;font-size:13px;line-height:1.7;}
+
+                /* Root Cause Summary */
+                .root-cause-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                    margin-top: 12px;
+                }
+                .root-cause-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 15px;
+                    background: #f8fafc;
+                    border-radius: 6px;
+                    border: 1px solid #e2e8f0;
+                }
+                .root-cause-label {
+                    font-weight: 600;
+                    color: #334155;
+                    font-size: 13px;
+                }
+                .root-cause-count {
+                    font-weight: 700;
+                    color: #334155;
+                    font-size: 14px;
+                    background: #e2e8f0;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                }
+                .root-cause-badge {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 10px;
+                    font-weight: 600;
+                    background: #f1f5f9;
+                    color: #475569;
+                    margin-left: 8px;
+                }
             </style>
         </head>
         <body>
@@ -650,6 +721,40 @@ export async function exportReportToPDF(data: ExportData) {
                 </div>
             </div>
 
+            ${(() => {
+                // Calculate root cause summary
+                const rootCauseCounts: Record<string, { nameKo: string; nameEn: string; count: number }> = {};
+                for (const issue of data.issues) {
+                    if (issue.rootCause) {
+                        if (!rootCauseCounts[issue.rootCause.id]) {
+                            rootCauseCounts[issue.rootCause.id] = {
+                                nameKo: issue.rootCause.nameKo,
+                                nameEn: issue.rootCause.nameEn,
+                                count: 0
+                            };
+                        }
+                        rootCauseCounts[issue.rootCause.id].count++;
+                    }
+                }
+                const rootCauseEntries = Object.entries(rootCauseCounts).sort((a, b) => b[1].count - a[1].count);
+
+                if (rootCauseEntries.length === 0) return '';
+
+                return `
+            <div class="section">
+                <div class="section-title">근본 원인 분류</div>
+                <div class="root-cause-grid">
+                    ${rootCauseEntries.map(([id, rc]) => `
+                        <div class="root-cause-item">
+                            <span class="root-cause-label">${escapeHtml(rc.nameKo)}</span>
+                            <span class="root-cause-count">${rc.count}건</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+                `;
+            })()}
+
             <div class="section">
                 <div class="section-title">발견된 문제점</div>
                 ${data.issues.length === 0 ? `
@@ -678,7 +783,10 @@ export async function exportReportToPDF(data: ExportData) {
                                                 </span>
                                             </td>
                                             <td>
-                                                <div class="issue-title">${escapeHtml(issue.title)}</div>
+                                                <div class="issue-title">
+                                                    ${escapeHtml(issue.title)}
+                                                    ${issue.rootCause ? `<span class="root-cause-badge">${escapeHtml(issue.rootCause.nameKo)}</span>` : ''}
+                                                </div>
                                                 <div class="issue-message">${escapeHtml(issue.message)}</div>
                                             </td>
                                         </tr>
@@ -722,6 +830,41 @@ export async function exportReportToPDF(data: ExportData) {
                 <div class="section-title">TBM 요약</div>
                 <div class="tbm-box">
                     <div class="tbm-text">${escapeHtml(tbmSummary)}</div>
+                </div>
+            </div>
+            ` : ''}
+
+            ${data.engagementScore ? `
+            <div class="section">
+                <div class="section-title">TBM 참여도 추정</div>
+                <div style="background:${data.engagementScore.level === 'high' ? '#dcfce7' : data.engagementScore.level === 'medium' ? '#fef9c3' : '#fee2e2'};border:1px solid ${data.engagementScore.level === 'high' ? '#86efac' : data.engagementScore.level === 'medium' ? '#fde047' : '#fca5a5'};border-radius:8px;padding:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="font-weight:700;font-size:15px;">참여도 추정</span>
+                        <span style="font-size:18px;font-weight:700;color:${data.engagementScore.level === 'high' ? '#16a34a' : data.engagementScore.level === 'medium' ? '#ca8a04' : '#dc2626'};">
+                            ${data.engagementScore.score}점 (${data.engagementScore.levelKo})
+                        </span>
+                    </div>
+                    <p style="font-size:10px;color:#6b7280;margin-bottom:12px;font-style:italic;">※ 음성 패턴 기반 추정치이며, 실제 상황과 다를 수 있습니다.</p>
+                    <div style="display:grid;gap:6px;margin-bottom:12px;">
+                        ${data.engagementScore.factors.map(f => `
+                            <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 8px;background:${f.detected ? '#f0fdf4' : '#fafafa'};border-radius:4px;">
+                                <span style="color:${f.detected ? '#15803d' : '#9ca3af'};">
+                                    ${f.detected ? '✓' : '○'} ${escapeHtml(f.nameKo)}
+                                </span>
+                                <span style="color:${f.detected ? '#16a34a' : '#9ca3af'};">
+                                    ${f.detected && f.evidence ? escapeHtml(f.evidence) : ''}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${data.engagementScore.suggestions.length > 0 ? `
+                        <div style="border-top:1px solid ${data.engagementScore.level === 'high' ? '#86efac' : data.engagementScore.level === 'medium' ? '#fde047' : '#fca5a5'};padding-top:10px;">
+                            <div style="font-weight:600;font-size:12px;margin-bottom:6px;">참고 제안:</div>
+                            <ul style="margin:0;padding-left:16px;font-size:11px;color:#374151;">
+                                ${data.engagementScore.suggestions.map(s => `<li style="margin-bottom:4px;">${escapeHtml(s)}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
             ` : ''}

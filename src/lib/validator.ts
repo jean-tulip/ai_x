@@ -108,6 +108,11 @@ export interface ValidationIssue {
   score?: number; // Stage 4: Severity score
   isAIFixable?: boolean; // Whether AI can suggest a fix (false for signatures, photos, physical inspections)
   path?: string; // Path to specific field or section
+  rootCause?: {  // Research-backed root cause classification
+    id: string;
+    nameKo: string;
+    nameEn: string;
+  } | null;
 }
 
 export type Issue = ValidationIssue & { id?: string };
@@ -584,6 +589,7 @@ export function validateDocument(data: DocData): ValidationIssue[] {
       severity: "error",
       title: "점검일자 누락",
       message: "점검일자가 식별되지 않았습니다.",
+      ruleId: "rule_missing_date",
     });
   }
 
@@ -592,6 +598,7 @@ export function validateDocument(data: DocData): ValidationIssue[] {
       severity: "error",
       title: "현장명 누락",
       message: "현장명이 기재되지 않았습니다.",
+      ruleId: "rule_missing_site",
     });
   }
 
@@ -600,6 +607,7 @@ export function validateDocument(data: DocData): ValidationIssue[] {
       severity: "error",
       title: "작업내용 누락",
       message: "작업내용이 상세히 기술되지 않았습니다.",
+      ruleId: "rule_missing_work_desc",
     });
   }
 
@@ -610,6 +618,7 @@ export function validateDocument(data: DocData): ValidationIssue[] {
       severity: "error",
       title: "담당자 서명 누락",
       message: "담당자 결재란이 비어있거나 식별되지 않습니다.",
+      ruleId: "rule_missing_signature_worker",
       isAIFixable: false, // Human-only: requires physical signature
     });
   }
@@ -620,6 +629,7 @@ export function validateDocument(data: DocData): ValidationIssue[] {
       severity: "warn",
       title: "관리책임자 서명 미비",
       message: "현장소장(관리책임자)의 서명이 확인되지 않았습니다.",
+      ruleId: "rule_missing_signature_manager",
       isAIFixable: false, // Human-only: requires physical signature
     });
   }
@@ -630,6 +640,7 @@ export function validateDocument(data: DocData): ValidationIssue[] {
       severity: "warn",
       title: "작업인원 미기재",
       message: "투입 인원 수가 확인되지 않습니다.",
+      ruleId: "rule_missing_worker_count",
     });
   }
 

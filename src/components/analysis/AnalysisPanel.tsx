@@ -5,6 +5,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 
 import { useToast } from "@/contexts/ToastContext";
 import { exportReportToPDF } from "@/lib/pdfExport";
+import { classifyUserMessage } from "@/lib/chatMessageClassifier";
+import { markdownToReactHtml } from "@/lib/simpleMarkdown";
 
 // Stage detection helper
 function getIssueStage(ruleId?: string): string {
@@ -74,6 +76,11 @@ interface Issue {
     confidence?: number; // Stage 4
     score?: number; // Stage 4
     isAIFixable?: boolean; // Whether AI can suggest a fix (false for photos, signatures)
+    rootCause?: {  // Research-backed root cause classification
+        id: string;
+        nameKo: string;
+        nameEn: string;
+    } | null;
 }
 
 interface RiskFactor {
@@ -96,6 +103,13 @@ interface ValidationStage {
     id: string;
     label: string;
     icon: string;
+}
+
+interface FallHazardStatus {
+    detected: boolean;
+    confidence: "high" | "medium" | "low";
+    indicators: string[];
+    source: string;
 }
 
 interface AnalysisPanelProps {
@@ -123,9 +137,16 @@ interface AnalysisPanelProps {
     onLocalChatMessagesChange?: (messages: { role: "ai" | "user"; text: string }[]) => void; // Callback when chat messages change
     reportContext?: any; // Enriched context for chat (extractedData, projectContext, etc.)
     onSendChatMessage?: (message: string) => void; // Inject message into chat (for corrective action)
+    fallHazardStatus?: FallHazardStatus | null; // [Brief #2] Fall hazard detection status
+
+    // [Brief #5] Lifted narrative state - shared with ChatPanel via parent
+    synthesisNarrative?: string | null;
+    correctiveAction?: string | null;
+    onSynthesisNarrativeChange?: (narrative: string | null) => void;
+    onCorrectiveActionChange?: (action: string | null) => void;
 }
 
-export default function AnalysisPanel({ loading, issues, chatMessages, onReupload, onModify, currentProjectName, riskCalculation, currentFile, historicalFileName, tbmSummary, tbmTranscript, documentType, validationStep = 0, showProgress = false, validationSteps, initialHiddenIssueIds = [], onHiddenIssuesChange, hasUnviewedIssues = false, isAnimating = false, onMarkIssuesViewed, initialLocalChatMessages = [], onLocalChatMessagesChange, reportContext, onSendChatMessage }: AnalysisPanelProps) {
+export default function AnalysisPanel({ loading, issues, chatMessages, onReupload, onModify, currentProjectName, riskCalculation, currentFile, historicalFileName, tbmSummary, tbmTranscript, documentType, validationStep = 0, showProgress = false, validationSteps, initialHiddenIssueIds = [], onHiddenIssuesChange, hasUnviewedIssues = false, isAnimating = false, onMarkIssuesViewed, initialLocalChatMessages = [], onLocalChatMessagesChange, reportContext, onSendChatMessage, fallHazardStatus, synthesisNarrative: externalSynthesis, correctiveAction: externalCorrective, onSynthesisNarrativeChange, onCorrectiveActionChange }: AnalysisPanelProps) {
     // Default to 5-stage document validation if not provided
     const defaultSteps: ValidationStage[] = [
         { id: "stage1", label: "형식 검증", icon: "description" },
@@ -148,9 +169,42 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
     const [isSendingChat, setIsSendingChat] = useState(false);
     const [localChatMessages, setLocalChatMessages] = useState<{ role: "ai" | "user"; text: string }[]>(initialLocalChatMessages);
 
+    // [Brief #5] Capture synthesis and corrective action narratives for PDF export
+    // Use external state if provided (lifted to parent), otherwise use local state
+    const [localSynthesis, setLocalSynthesis] = useState<string | null>(null);
+    const [localCorrective, setLocalCorrective] = useState<string | null>(null);
+
+    const synthesisNarrative = externalSynthesis !== undefined ? externalSynthesis : localSynthesis;
+    const correctiveAction = externalCorrective !== undefined ? externalCorrective : localCorrective;
+
+    const setSynthesisNarrative = (value: string | null) => {
+        if (onSynthesisNarrativeChange) {
+            onSynthesisNarrativeChange(value);
+        } else {
+            setLocalSynthesis(value);
+        }
+    };
+
+    const setCorrectiveAction = (value: string | null) => {
+        if (onCorrectiveActionChange) {
+            onCorrectiveActionChange(value);
+        } else {
+            setLocalCorrective(value);
+        }
+    };
+
     // Sync localChatMessages when initialLocalChatMessages changes (e.g., project switch, async restore)
+    // Also reset narrative captures when chat context changes
     useEffect(() => {
         setLocalChatMessages(initialLocalChatMessages);
+        // Only reset narratives if we're starting fresh (empty initial messages)
+        if (initialLocalChatMessages.length === 0) {
+            setLocalSynthesis(null);
+            setLocalCorrective(null);
+            // Also notify parent to reset if callbacks exist
+            onSynthesisNarrativeChange?.(null);
+            onCorrectiveActionChange?.(null);
+        }
     }, [initialLocalChatMessages]);
 
     // Smart severity filter: Only show buttons for severities that exist in issues
@@ -207,6 +261,7 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                 title: i.title,
                 message: i.message,
                 ruleId: i.ruleId,
+                rootCause: i.rootCause || null,
             })),
         };
 
@@ -223,6 +278,15 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
 
             const data = await res.json();
             if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+            // [Brief #5] Capture synthesis/corrective action for PDF export
+            const messageType = classifyUserMessage(text);
+            if (messageType === "synthesis") {
+                setSynthesisNarrative(data.reply);
+            }
+            if (messageType === "corrective_action") {
+                setCorrectiveAction(data.reply);
+            }
 
             // Add AI response
             setLocalChatMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
@@ -403,6 +467,7 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                 title: i.title,
                 message: i.message,
                 ruleId: i.ruleId,
+                rootCause: i.rootCause || null,
             })),
             summary: {
                 totalIssues: issues.length,
@@ -450,6 +515,10 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                 mismatches: issues.filter(i => i.ruleId?.startsWith("photo_") && i.severity === "error").length,
                 warnings: issues.filter(i => i.ruleId?.startsWith("photo_") && i.severity === "warn").length,
             } : undefined,
+
+            // [Brief #5] Narrative content for PDF restructure
+            synthesisNarrative: synthesisNarrative || undefined,
+            correctiveAction: correctiveAction || undefined,
         };
 
         try {
@@ -740,12 +809,16 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                             <span className="text-xs font-bold text-slate-500 ml-1">
                                 {msg.role === "user" ? "나" : "AI 안전도우미"}
                             </span>
-                            <div className={`p-4 rounded-2xl shadow-sm border text-slate-800 dark:text-white whitespace-pre-line ${
+                            <div className={`p-4 rounded-2xl shadow-sm border text-slate-800 dark:text-white ${
                                 msg.role === "user"
-                                    ? "bg-primary/10 dark:bg-primary/20 rounded-tr-none border-primary/20 dark:border-primary/30"
+                                    ? "bg-primary/10 dark:bg-primary/20 rounded-tr-none border-primary/20 dark:border-primary/30 whitespace-pre-line"
                                     : "bg-white dark:bg-surface-dark rounded-tl-none border-slate-100 dark:border-slate-700"
                             }`}>
-                                {msg.text}
+                                {msg.role === "ai" ? (
+                                    <div dangerouslySetInnerHTML={markdownToReactHtml(msg.text)} />
+                                ) : (
+                                    msg.text
+                                )}
                             </div>
                         </div>
                     </div>
@@ -824,6 +897,46 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                                         ))}
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* [Brief #2] Fall Hazard Warning Banner */}
+                {fallHazardStatus?.detected && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 mb-4 rounded-r-xl shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+                        <div className="flex items-start">
+                            <span className="material-symbols-outlined text-red-500 text-2xl mr-3 mt-0.5">warning</span>
+                            <div className="flex-1">
+                                <h4 className="text-red-800 dark:text-red-200 font-bold text-sm flex items-center gap-2">
+                                    ⚠️ 추락 위험 우선 경고
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                        fallHazardStatus.confidence === "high"
+                                            ? "bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200"
+                                            : "bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200"
+                                    }`}>
+                                        신뢰도: {fallHazardStatus.confidence === "high" ? "높음" : fallHazardStatus.confidence === "medium" ? "중간" : "낮음"}
+                                    </span>
+                                </h4>
+                                <p className="text-red-700 dark:text-red-300 text-xs mt-1 leading-relaxed">
+                                    고소작업이 감지되었습니다. <strong>추락사고는 건설업 사망사고의 71%</strong>를 차지합니다.
+                                    <br />추락 관련 모든 항목이 최우선으로 검증됩니다.
+                                </p>
+                                {fallHazardStatus.indicators && fallHazardStatus.indicators.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-1">
+                                        {fallHazardStatus.indicators.slice(0, 5).map((indicator, idx) => (
+                                            <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-800/50 text-red-700 dark:text-red-300">
+                                                {indicator}
+                                            </span>
+                                        ))}
+                                        {fallHazardStatus.indicators.length > 5 && (
+                                            <span className="text-xs text-red-500">+{fallHazardStatus.indicators.length - 5}개 더</span>
+                                        )}
+                                    </div>
+                                )}
+                                <p className="text-xs text-red-500 dark:text-red-400 mt-2 italic">
+                                    출처: Hwang et al. (2023) - 소규모 건설현장 사망사고 분석 연구
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -922,10 +1035,15 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
 
                                                     {/* Content */}
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-1">
+                                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                             <h4 className={`font-bold text-sm ${severityColor(issue.severity, issue.ruleId)}`}>
                                                                 {issue.title}
                                                             </h4>
+                                                            {issue.rootCause && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
+                                                                    {issue.rootCause.nameKo}
+                                                                </span>
+                                                            )}
                                                             {issue.confidence !== undefined && (
                                                                 <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                                                                     {issue.confidence}%
@@ -1005,11 +1123,18 @@ export default function AnalysisPanel({ loading, issues, chatMessages, onReuploa
                                     <h3 className={`text-lg font-black ${severityColor(selectedIssue.severity, selectedIssue.ruleId)}`}>
                                         {selectedIssue.title}
                                     </h3>
-                                    {selectedIssue.confidence !== undefined && (
-                                        <p className="text-xs text-slate-400 mt-1">
-                                            신뢰도 {selectedIssue.confidence}%
-                                        </p>
-                                    )}
+                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                        {selectedIssue.rootCause && (
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-700" title={`연구 기반 근본 원인: ${selectedIssue.rootCause.nameEn}`}>
+                                                {selectedIssue.rootCause.nameKo}
+                                            </span>
+                                        )}
+                                        {selectedIssue.confidence !== undefined && (
+                                            <span className="text-xs text-slate-400">
+                                                신뢰도 {selectedIssue.confidence}%
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 

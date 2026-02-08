@@ -51,10 +51,26 @@ export default function DocumentViewer({
   const [imageLoading, setImageLoading] = useState(true);
   const fileDisplayName = file?.name ?? historicalFileName ?? "파일을 업로드하세요";
 
-  // Reset loading state when page or images change
+  // Get current image URL for tracking
+  const currentImageUrl = pageImages[currentPage] || "";
+
+  // Reset loading state when the actual image URL changes (not just array reference)
   useEffect(() => {
-    setImageLoading(true);
-  }, [currentPage, pageImages]);
+    if (currentImageUrl) {
+      setImageLoading(true);
+
+      // Fallback: if image doesn't trigger onLoad within 5 seconds, assume it loaded
+      // This handles cases where browser uses cached image without firing onLoad
+      const timeoutId = setTimeout(() => {
+        setImageLoading(false);
+      }, 5000);
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      // No image to load
+      setImageLoading(false);
+    }
+  }, [currentImageUrl]);
 
   const totalPages = pageImages.length;
   const hasNext = currentPage < totalPages - 1;
@@ -308,6 +324,7 @@ export default function DocumentViewer({
 
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
+                key={`page-${currentPage}-${currentImageUrl.slice(-20)}`}
                 src={pageImages[currentPage]}
                 alt={`Page ${currentPage + 1}`}
                 className={`w-full h-auto block select-none cursor-zoom-in transition-opacity duration-300 ${
