@@ -1027,7 +1027,7 @@ export async function POST(req: Request) {
       executablePath: isLocal
         ? findLocalChrome()
         : await chromium.executablePath(
-            "https://github.com/nicholasgriffintn/chromium/releases/download/v143.0.0/chromium-v143.0.0-pack.tar"
+            "https://github.com/Sparticuz/chromium/releases/download/v143.0.0/chromium-v143.0.0-pack.x64.tar"
           ),
       headless: true,
     });
