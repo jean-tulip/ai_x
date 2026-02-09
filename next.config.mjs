@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     // ✅ deprecated 키 이동
-    serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core', 'handlebars', 'pdfjs-dist'],
+    serverExternalPackages: ['@sparticuz/chromium-min', 'puppeteer-core', 'handlebars', 'pdfjs-dist'],
 
     // ✅ Turbopack 명시
     turbopack: {},

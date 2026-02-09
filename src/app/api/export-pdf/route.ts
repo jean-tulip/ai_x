@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 
 interface ExportData {
   // Existing fields (keep all)
@@ -1024,7 +1024,11 @@ export async function POST(req: Request) {
     const browser = await puppeteer.launch({
       args: isLocal ? [] : chromium.args,
       defaultViewport: { width: 1280, height: 720 },
-      executablePath: isLocal ? findLocalChrome() : await chromium.executablePath(),
+      executablePath: isLocal
+        ? findLocalChrome()
+        : await chromium.executablePath(
+            "https://github.com/nicholasgriffintn/chromium/releases/download/v143.0.0/chromium-v143.0.0-pack.tar"
+          ),
       headless: true,
     });
 
