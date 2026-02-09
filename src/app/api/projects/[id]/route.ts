@@ -7,10 +7,10 @@ import { prisma } from "@/lib/db";
 // DELETE: Delete a project and nullify its references in reports
 export async function DELETE(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id: projectId } = await params;
 
         // Check if project exists
         const project = await prisma.project.findUnique({
@@ -43,10 +43,10 @@ export async function DELETE(
 // GET: Get a single project with full context
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id: projectId } = await params;
 
         const project = await prisma.project.findUnique({
             where: { id: projectId }
@@ -65,10 +65,10 @@ export async function GET(
 // PATCH: Update a project
 export async function PATCH(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id: projectId } = await params;
         const { name, description, contextText } = await req.json();
 
         // Check if project exists

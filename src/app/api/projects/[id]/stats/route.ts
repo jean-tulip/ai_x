@@ -6,10 +6,10 @@ import { prisma } from "@/lib/db";
 
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id: projectId } = await params;
 
         // Get all reports for this project
         const reports = await prisma.report.findMany({
