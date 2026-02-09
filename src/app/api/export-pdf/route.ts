@@ -1,7 +1,8 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { createRequire } from "module";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 interface ExportData {
   // Existing fields (keep all)
@@ -1005,43 +1006,32 @@ export async function POST(req: Request) {
 
     const htmlContent = buildHTMLContent(data);
 
-    // Load html-pdf-node safely
-    let generatePdf: ((file: { content: string }, options: Record<string, unknown>) => Promise<Buffer>) | null =
-      null;
+    console.log("[API Export PDF] Launching Chromium...");
+    const isLocal = process.env.NODE_ENV === "development";
+    const browser = await puppeteer.launch({
+      args: isLocal ? [] : chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: isLocal
+        ? (process.env.CHROME_PATH ?? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")
+        : await chromium.executablePath(),
+      headless: true,
+    });
 
+    let pdfBuffer: Buffer;
     try {
-      const require = createRequire(import.meta.url);
-      const runtimeRequire = eval("require") as NodeRequire;
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
-      const htmlPdfModule = (runtimeRequire?.("html-pdf-node") ?? require("html-pdf-node")) as any;
-      const htmlPdf = htmlPdfModule?.default ?? htmlPdfModule;
-
-      generatePdf = htmlPdf?.generatePdf ?? htmlPdf?.default?.generatePdf ?? htmlPdf?.default ?? null;
-    } catch (importError: any) {
-      console.error("[API Export PDF] Failed to load html-pdf-node:", importError);
-      return NextResponse.json(
-        { error: "PDF generation dependency is missing. Please install html-pdf-node." },
-        { status: 500 }
-      );
+      pdfBuffer = Buffer.from(await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: { top: "10mm", right: "10mm", bottom: "10mm", left: "10mm" },
+        preferCSSPageSize: true,
+      }));
+    } finally {
+      await browser.close();
     }
 
-    if (!generatePdf) {
-      console.error("[API Export PDF] html-pdf-node did not expose generatePdf.");
-      return NextResponse.json(
-        { error: "PDF generation module is unavailable. Please verify html-pdf-node installation." },
-        { status: 500 }
-      );
-    }
-
-    const options = {
-      format: "A4",
-      printBackground: true,
-      margin: { top: "10mm", right: "10mm", bottom: "10mm", left: "10mm" },
-      preferCSSPageSize: true,
-    };
-
-    console.log("[API Export PDF] Generating PDF...");
-    const pdfBuffer = await generatePdf({ content: htmlContent }, options);
     console.log("[API Export PDF] PDF generated successfully, size:", pdfBuffer.length);
 
     // Use project name when in project context, otherwise fall back to file name

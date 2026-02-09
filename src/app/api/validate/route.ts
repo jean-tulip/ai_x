@@ -700,6 +700,7 @@ Respond with ONLY a JSON object:
             messages: [{ role: "user", content }],
             max_completion_tokens: 2000,
             temperature: 0,
+            response_format: { type: "json_object" },
           });
 
           photoAnalysis = safeJsonParse(response.choices[0]?.message?.content ?? "");

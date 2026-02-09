@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// DELETE: Delete a project and nullify its references in reports
+// DELETE: Delete a project and all associated reports
 export async function DELETE(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -21,11 +21,9 @@ export async function DELETE(
             return NextResponse.json({ error: "Project not found" }, { status: 404 });
         }
 
-        // First, nullify projectId for all reports associated with this project
-        // This preserves historical data while removing the project reference
-        await prisma.report.updateMany({
-            where: { projectId: projectId },
-            data: { projectId: null }
+        // Delete all reports associated with this project
+        await prisma.report.deleteMany({
+            where: { projectId: projectId }
         });
 
         // Now delete the project
