@@ -167,7 +167,7 @@ export function aggregateFallStatus(
  */
 export const FALL_RELATED_RULES = [
   "rule_height_harness",
-  "rule_height_no_net",
-  "rule_fall_contradiction",
+  "rule_height_protection",
+  "rule_height_contradiction",
   "rule_height_work_missing",
 ];

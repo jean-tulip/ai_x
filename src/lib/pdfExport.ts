@@ -950,19 +950,22 @@ export async function exportReportToPDF(data: ExportData) {
         clientHeight: tempDiv.clientHeight
     });
 
-    // FIX: Check if fileName already contains a date pattern (YYYY-MM-DD)
+    // Use project name when in project context, otherwise fall back to file name
+    const baseName = data.projectName ? data.projectName : data.fileName;
+
+    // FIX: Check if baseName already contains a date pattern (YYYY-MM-DD)
     const datePattern = /^\d{4}-\d{2}-\d{2}_/;
     let finalFilename: string;
 
-    if (datePattern.test(data.fileName)) {
-        // FileName already has date, don't add it again
-        const cleanFileName = data.fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9가-힣_-]/g, "_");
+    if (datePattern.test(baseName)) {
+        // baseName already has date, don't add it again
+        const cleanFileName = baseName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9가-힣_-]/g, "_");
         finalFilename = `${cleanFileName}_report.pdf`;
         console.log('[PDF Export] Filename already has date, using:', finalFilename);
     } else {
         // Add date prefix
         const dateStr = data.createdAt.toISOString().split('T')[0];
-        const cleanFileName = data.fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9가-힣_-]/g, "_");
+        const cleanFileName = baseName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9가-힣_-]/g, "_");
         finalFilename = `${dateStr}_${cleanFileName}_report.pdf`;
         console.log('[PDF Export] Adding date prefix:', finalFilename);
     }

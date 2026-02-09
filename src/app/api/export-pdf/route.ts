@@ -1044,15 +1044,18 @@ export async function POST(req: Request) {
     const pdfBuffer = await generatePdf({ content: htmlContent }, options);
     console.log("[API Export PDF] PDF generated successfully, size:", pdfBuffer.length);
 
+    // Use project name when in project context, otherwise fall back to file name
+    const baseName = data.projectName ? data.projectName : data.fileName;
+
     const datePattern = /^\d{4}-\d{2}-\d{2}_/;
     let finalFilename: string;
 
-    if (datePattern.test(data.fileName)) {
-      const cleanFileName = data.fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9가-힣_-]/g, "_");
+    if (datePattern.test(baseName)) {
+      const cleanFileName = baseName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9가-힣_-]/g, "_");
       finalFilename = `${cleanFileName}_report.pdf`;
     } else {
       const dateStr = new Date(data.createdAt).toISOString().split("T")[0];
-      const cleanFileName = data.fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9가-힣_-]/g, "_");
+      const cleanFileName = baseName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9가-힣_-]/g, "_");
       finalFilename = `${dateStr}_${cleanFileName}_report.pdf`;
     }
 
