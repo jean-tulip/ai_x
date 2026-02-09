@@ -1008,12 +1008,23 @@ export async function POST(req: Request) {
 
     console.log("[API Export PDF] Launching Chromium...");
     const isLocal = process.env.NODE_ENV === "development";
+
+    function findLocalChrome(): string {
+      if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+      switch (process.platform) {
+        case "win32":
+          return "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+        case "darwin":
+          return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+        default: // linux
+          return "/usr/bin/google-chrome";
+      }
+    }
+
     const browser = await puppeteer.launch({
       args: isLocal ? [] : chromium.args,
       defaultViewport: { width: 1280, height: 720 },
-      executablePath: isLocal
-        ? (process.env.CHROME_PATH ?? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")
-        : await chromium.executablePath(),
+      executablePath: isLocal ? findLocalChrome() : await chromium.executablePath(),
       headless: true,
     });
 
